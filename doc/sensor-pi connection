@@ -1,0 +1,15 @@
+SENSOR to Pi connection
+
+...---------------O (pi corner)
+	
+purple	1	2	N/A
+green	3	4	Orange
+yellow	5	6	Blue
+	7	8
+	9	10
+	.	.
+	.	.
+	.	.
+	39	40
+
+...---------------O (pi corner)

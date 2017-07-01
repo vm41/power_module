@@ -1,0 +1,36 @@
+To summarize, for using I2C you need to setup your hardware as follows:
+Connect FT232H D1 and D2 together with a jumper wire.  This combined connection is the I2C SDA data line.
+Add a 4.7 kilo-ohm resistor from the I2C SDA data line (pins D1 and D2 above) up to FT232H 5V.
+Add a 4.7 kilo-ohm resistor from FT232H D0 up to FT232H 5V.  This pin D0 is the I2C SCL clock line.
+
+
+----------------------
+if the PC cannot open FTDI, we need to replace the USB driver, using zadig.
+maybe this has happened before on a separate USB port, try other USB ports and check first.
+
+Note: Make sure to select the device with Driver equal to FTDIBUS and USB ID equal to 0403 6014! 
+Click the up/down arrows on the driver select box to the right of the green arrow and select the libusbK driver as shown above.
+Now click the Replace Driver button to replace the FTDI driver with the libusb-based driver.  After the driver replacement finishes you can close Zadig tool.
+To check that the driver was successfully replaced, open Device Manager from Control Panel or searching in the Start menu.  You should see a new top level node libusbK USB Devices and the USB Serial Converter underneath it as shown below.
+
+
+installing libftdi for python
+using the libftd archive:
+
+We need to copy some files from libftdi into Python's package directory.  Open another Explorer window and navigate to the location you installed Python earlier, typically C:\python27.  Inside the Python directory navigate to the Lib > site-packages folder.  Files you copy into this folder will be available globally as packages that your Python scripts can use.
+From the libftdi archive folder, copy all the .DLL files from the bin folder into the Python site-packages folder, specifically:
+bin\libftdi1.dll
+bin\libftdipp1.dll
+bin\libgcc_s_dw2-1.dll
+bin\libiconv-2.dll
+bin\libintl-8.dll
+bin\libstdc++-6.dll
+bin\libusb-1.0.dll
+Then also copy in the files from the python2.7 folder of the libftdi archive into the Python site-packages folder:
+python2.7\_ftdi.pyd
+python2.7\ftdi1.py
+
+
+installing adafruit GPIO library:
+using the provided archive, just simply:
+python setup.py install

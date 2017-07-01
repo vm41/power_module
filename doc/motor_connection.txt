@@ -1,0 +1,13 @@
+sensors
+0	1	2	3
+motors connected
+B	A	D	C
+
+Blue	Green	Red	Cyan
+
+
+
+	^
+Red  D	    A   Green
+
+Cyan C      B   Blue
