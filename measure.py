@@ -37,7 +37,7 @@ IS_LOGGING      = False
 LOG_INFO        = False
 INFO_STRING     = ""
 
-DEV_ADDRESS     = 0x48
+DEV_ADDRESS     = 0x4a
 I2C_CONFIG      = 0xC3E3 #11000011 11100011 #OS=1 MUX=100,A0_GND  PGA=001,1/1 MODE=1,single. data rate 111, rest unchanged
 SENSOR_STEP     = 0.1 #100mv/A for the 20A sensor module (-20 to 20 Amps in about 4V)
 ADC_SCALE       = 4.096/32768.0

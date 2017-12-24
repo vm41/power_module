@@ -51,7 +51,7 @@ class Measure(object):
         self.SESSION_DIR               = None
         self.SESSION_DIR_INIT          = "session_"
         self.VERBOS_AVERAGE_WINDOW     = 10
-        self.DEV_ADDRESS               = 0x48
+        self.DEV_ADDRESS               = 0x4a
         self.I2C_CONFIG                = 0xC3E3 #11000011 11100011 #OS=1 MUX=100,A0_GND  PGA=001,1/1 MODE=1,single. data rate 111, rest unchanged
         self.SENSOR_STEP               = 0.1 #100mv/A for the 20A sensor module (-20 to 20 Amps in about 4V)
         self.ADC_SCALE                 = 4.096/32768.0
@@ -140,7 +140,7 @@ class Measure(object):
                         value=self.I2C_CONFIG
                         value+=channel*self.MUX_MULTIPLIER
                         self.i2c_write(self.I2C_REG_CONF, value)
-                        i2c_wait_to_read()
+                        self.i2c_wait_to_read()
                         value=self.i2c_read(self.I2C_REG_CONV)
                         voltage=value * self.ADC_SCALE
                         calibrate_sum += voltage
