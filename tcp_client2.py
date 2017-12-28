@@ -44,4 +44,4 @@ class tcpClient(object):
 
 		self.s.close()
 
-newClient = tcpClient('127.0.0.1')#instaciating the class object
+newClient = tcpClient('127.0.0.1')#instanciating the class object
