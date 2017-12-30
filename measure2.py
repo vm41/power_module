@@ -163,7 +163,7 @@ class Measure(object):
         finish_time=0
         start_time=time.time()
         last_time=start_time
-        myFile_name = LOG_DIR+"/"+self.SESSION_DIR+"/log_"+time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime(start_time))+"_power.log"
+        myFile_name = LOG_DIR+"/"+self.SESSION_DIR+"/log_"+time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime(start_time))+"_power.log"# creating new file under current session directory
         self.dump("openning file: %s"%(myFile_name))
         myFile=open(myFile_name,"a")
         myFile.write("#start time: %13.3f\t"%(start_time))
