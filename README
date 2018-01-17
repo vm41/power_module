@@ -2,8 +2,6 @@
 This is new branch c122017 created from the master branch
 Migration of measure.py to more object oriented form.
 
-DO NOT DELETE "2016_everything.zip"
-That is not a backup!
 ----------------------------------
 Documentations for selecting the hardware and instruments can be found in "doc"
 Basic test scripts can be found in i2c-test
