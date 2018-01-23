@@ -12,19 +12,19 @@ global DUMP_FILE
 SMOOTHING_WINDOW=20
 
 BATTERY_VOLTAGE=23 # this ensures power = current * voltage
-NUMBER_OF_DAYS=2
+NUMBER_OF_DAYS=1
 NUMBER_OF_ROUNDS=1
 NUMBER_OF_SETUPS=1
 SPEED_SETUPS = [5.0, 5.0, 7.0, 10.0]    #       <- ATTENTION
 ANGLE_SETUPS = [0, 45, 90, 135, 180]
 ANGLE_CONSTANT_SPEED=5.0
-TARGET_SETUP = "Speed" # either "Speed" or "Angle"
+TARGET_SETUP = "Hover" # either "Speed" or "Angle"
 SPEED_MARKER_THRESHOLD=1.0     #first time and last time haveing targetSpeed - threshold, will be marked default: 1.0
-SAVE_GRAPH_CHANNELS = False     #individual channel current vs. time
+SAVE_GRAPH_CHANNELS = True     #individual channel current vs. time
 SAVE_GRAPH_TOTAL = False        #total current vs. time
 SAVE_GRAPH_VELOCITY = False
 SAVE_GRAPH_ENERGY = False
-SAVE_GRAPH_PATH = True  # for stadium experiments to create a graph for paths
+SAVE_GRAPH_PATH = False  # for stadium experiments to create a graph for paths
 SAVE_GRAPH_SETUP_BASED = False
 SAVE_GRAPH_ROUND_BASED = False
 APPLY_GRAPH_CUSTOMIZATION = True #yticks, ylimit range, etc.
@@ -364,6 +364,8 @@ for this_trial in range(trials):
         added_setup_label = 'Speed = %.1f m/s'%(SPEED_SETUPS[this_setup])
     elif (TARGET_SETUP=="Angle"):
         added_setup_label = 'Angle = %d deg'%(ANGLE_SETUPS[this_setup])
+    elif (TARGET_SETUP=="Hover"):
+        added_setup_label = 'Hover'
     else:
         dump("UKNOWN TARGET SETUP: "+TARGET_SETUP)
         
@@ -382,7 +384,7 @@ for this_trial in range(trials):
         ax1.set_xlabel('Time (s)')
         ax1.set_ylabel('Current (A)')
         
-        plt.title('%d Channels - Round = %d %s'%(NUMBER_OF_CHANNELS,this_day*NUMBER_OF_ROUNDS+this_round+1,added_setup_label))
+        plt.title('%d Channels - %s'%(NUMBER_OF_CHANNELS,added_setup_label))# - Round = %d %s'%(NUMBER_OF_CHANNELS,this_day*NUMBER_OF_ROUNDS+this_round+1,added_setup_label))
         plt.savefig('%s/%s/all/%s_channels.png'%(LOG_DIR,STR_GRAPHS,file_names[this_trial]),dpi=600,format="png")
         if (SAVE_GRAPH_ROUND_BASED):
             plt.savefig('%s/%s/%s/round-%d/channels_%s-%d.png'%(LOG_DIR,STR_GRAPHS,STR_CROUND,this_day*NUMBER_OF_ROUNDS+this_round+1,TARGET_SETUP,this_setup+1))
@@ -403,11 +405,12 @@ for this_trial in range(trials):
             ax2.axvline(info_time[this_trial][stop_marker_index[this_trial]],color='r')
 
         if (APPLY_GRAPH_CUSTOMIZATION):
-            ax2.set_ylim(9,15)
+            #ax2.set_ylim(9,15)
+            pass
 
         ax2.set_xlabel('Time (s)')
         ax2.set_ylabel('Total Current (A)')
-        plt.title('Total Current - Round = %d %s'%(this_day*NUMBER_OF_ROUNDS+this_round+1,added_setup_label))
+        plt.title('Total Current - %s'%(added_setup_label))# - Round = %d %s'%(this_day*NUMBER_OF_ROUNDS+this_round+1,added_setup_label))
         plt.savefig('%s/%s/all/%s_total.eps'%(LOG_DIR,STR_GRAPHS,file_names[this_trial]),dpi=600,format="eps")
         if (SAVE_GRAPH_ROUND_BASED):
             plt.savefig('%s/%s/%s/round-%d/total_%s-%d.png'%(LOG_DIR,STR_GRAPHS,STR_CROUND,this_day*NUMBER_OF_ROUNDS+this_round+1,TARGET_SETUP,this_setup+1))

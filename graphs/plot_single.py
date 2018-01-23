@@ -21,9 +21,9 @@ NUMBER_OF_ROUNDS=1
 NUMBER_OF_SPEEDS=1
 SPEED_SETUPS = [5.0]*30
 SPEED_MARKER_THRESHHOLD=1.0     #first time and last time haveing targetSpeed - threshold, will be marked
-SAVE_GRAPH_CHANNELS = False     #individual channel current vs. time
-SAVE_GRAPH_TOTAL = True         #total current vs. time
-SAVE_GRAPH_VELOCITY = True      
+SAVE_GRAPH_CHANNELS = True     #individual channel current vs. time
+SAVE_GRAPH_TOTAL = False         #total current vs. time
+SAVE_GRAPH_VELOCITY = False      
 SAVE_GRAPH_ENERGY = False
 SAVE_GRAPH_SPEED_BASED = False
 SAVE_GRAPH_ROUND_BASED = False
@@ -341,7 +341,7 @@ for this_trial in range(trials):
 
         ax1.set_xlabel('Time (s)')
         ax1.set_ylabel('Current (A)')
-        plt.title('%d Channels - Round = %d Speed = %.1f m/s'%(NUMBER_OF_CHANNELS,this_round+1,SPEED_SETUPS[this_speed]))
+        plt.title('%d Channels')# - Round = %d Speed = %.1f m/s'%(NUMBER_OF_CHANNELS,this_round+1,SPEED_SETUPS[this_speed]))
         plt.savefig('%s/%s/all/%s_channels.png'%(LOG_DIR,STR_GRAPHS,file_names[this_trial]),dpi=600,format="png")
         if (SAVE_GRAPH_ROUND_BASED):
             plt.savefig('%s/%s/%s/round-%d/channels_speed-%.1f.png'%(LOG_DIR,STR_GRAPHS,STR_CROUND,this_round+1,SPEED_SETUPS[this_speed]))
@@ -383,7 +383,7 @@ for this_trial in range(trials):
 
         ax3.set_xlabel('Time (s)')
         ax3.set_ylabel('Total Energy (J)')
-        plt.title('Cumulative Energy - Round = %d Speed = %.1f m/s'%(this_round+1, SPEED_SETUPS[this_speed]))
+        plt.title('Cumulative Energy')# - Round = %d Speed = %.1f m/s'%(this_round+1, SPEED_SETUPS[this_speed]))
         plt.savefig('%s/%s/all/%s_energy.png'%(LOG_DIR,STR_GRAPHS,file_names[this_trial]),dpi=600,format="png")
         if (SAVE_GRAPH_ROUND_BASED):
             plt.savefig('%s/%s/%s/round-%d/energy_speed-%.1f.png'%(LOG_DIR,STR_GRAPHS,STR_CROUND,this_round+1,SPEED_SETUPS[this_speed]))
