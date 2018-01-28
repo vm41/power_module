@@ -1,8 +1,8 @@
 current
 current/
-/current
-/graphs-trials/current-graphs
-graphs-trials/current-graphs
-/graphs-trials/graphs*
-graphs-trials/graphs*
+#/current
+#/graphs-trials/current-graphs
+#graphs-trials/current-graphs
+#/graphs-trials/graphs*
+#graphs-trials/graphs*
 *.pyc
