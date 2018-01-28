@@ -19,16 +19,16 @@ class tcpClient(object):
 				sys.stdout.write('Enter command: ')
 				sys.stdout.flush()
 				self.MESSAGE = raw_input()
-				if self.MESSAGE == 'Q':
+				if self.MESSAGE == 'Q' || self.MESSAGE == 'q':
 					print 'exiting'
 					sys.stdout.flush()
 					break
 				self.command = bytearray()
-				if self.MESSAGE == 'S':
+				if self.MESSAGE == 'S' || self.MESSAGE == 's':
 					self.command.append(PWR_Command.PWR_START)
-				if self.MESSAGE == 'F':
+				if self.MESSAGE == 'F' || self.MESSAGE == 'f':
 					self.command.append(PWR_Command.PWR_STOP)
-				if self.MESSAGE == 'E':
+				if self.MESSAGE == 'E' || self.MESSAGE == 'E':
 					self.command.append(PWR_Command.PWR_EVENT)
 				if self.MESSAGE.startswith('M'):
 					self.command.append(PWR_Command.PWR_MARK)
