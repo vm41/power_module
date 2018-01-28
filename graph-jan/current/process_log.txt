@@ -1,0 +1,243 @@
+----------------------------------------
+processing file: log_2018_01_05_13_56_19_power.log
+355 lines were read, 352 lines counted
+within the trial#0 we found 88 reading sets, 0 events+markers, 0 info messages
+----------------------------------------
+processing file: log_2018_01_05_13_56_39_power.log
+631 lines were read, 628 lines counted
+within the trial#1 we found 157 reading sets, 0 events+markers, 0 info messages
+----------------------------------------
+processing file: log_2018_01_05_13_56_59_power.log
+303 lines were read, 300 lines counted
+within the trial#2 we found 75 reading sets, 0 events+markers, 0 info messages
+----------------------------------------
+processing file: log_2018_01_05_13_57_19_power.log
+371 lines were read, 368 lines counted
+within the trial#3 we found 92 reading sets, 0 events+markers, 0 info messages
+----------------------------------------
+processing file: log_2018_01_05_13_57_54_power.log
+7183 lines were read, 7180 lines counted
+within the trial#4 we found 1795 reading sets, 0 events+markers, 0 info messages
+----------------------------------------
+processing file: log_2018_01_05_14_15_33_power.log
+427 lines were read, 424 lines counted
+within the trial#5 we found 106 reading sets, 0 events+markers, 0 info messages
+----------------------------------------
+processing file: log_2018_01_05_14_15_51_power.log
+423 lines were read, 420 lines counted
+within the trial#6 we found 105 reading sets, 0 events+markers, 0 info messages
+----------------------------------------
+processing file: log_2018_01_05_14_16_05_power.log
+459 lines were read, 456 lines counted
+within the trial#7 we found 114 reading sets, 0 events+markers, 0 info messages
+----------------------------------------
+processing file: log_2018_01_05_14_16_18_power.log
+551 lines were read, 548 lines counted
+within the trial#8 we found 137 reading sets, 0 events+markers, 0 info messages
+----------------------------------------
+processing file: log_2018_01_05_14_16_31_power.log
+463 lines were read, 460 lines counted
+within the trial#9 we found 115 reading sets, 0 events+markers, 0 info messages
+----------------------------------------
+processing file: log_2018_01_05_14_19_26_power.log
+379 lines were read, 376 lines counted
+within the trial#10 we found 94 reading sets, 0 events+markers, 0 info messages
+----------------------------------------
+processing file: log_2018_01_05_14_19_36_power.log
+315 lines were read, 312 lines counted
+within the trial#11 we found 78 reading sets, 0 events+markers, 0 info messages
+----------------------------------------
+processing file: log_2018_01_05_14_19_45_power.log
+427 lines were read, 424 lines counted
+within the trial#12 we found 106 reading sets, 0 events+markers, 0 info messages
+----------------------------------------
+processing file: log_2018_01_05_14_20_35_power.log
+367 lines were read, 364 lines counted
+within the trial#13 we found 91 reading sets, 0 events+markers, 0 info messages
+----------------------------------------
+processing file: log_2018_01_05_14_20_45_power.log
+359 lines were read, 356 lines counted
+within the trial#14 we found 89 reading sets, 0 events+markers, 0 info messages
+----------------------------------------
+processing file: log_2018_01_05_14_23_54_power.log
+443 lines were read, 440 lines counted
+within the trial#15 we found 110 reading sets, 0 events+markers, 0 info messages
+----------------------------------------
+processing file: log_2018_01_05_14_24_14_power.log
+787 lines were read, 784 lines counted
+within the trial#16 we found 196 reading sets, 0 events+markers, 0 info messages
+----------------------------------------
+processing file: log_2018_01_05_14_24_54_power.log
+459 lines were read, 456 lines counted
+within the trial#17 we found 114 reading sets, 0 events+markers, 0 info messages
+----------------------------------------
+processing file: log_2018_01_05_14_25_07_power.log
+695 lines were read, 692 lines counted
+within the trial#18 we found 173 reading sets, 0 events+markers, 0 info messages
+----------------------------------------
+processing file: log_2018_01_05_14_27_04_power.log
+419 lines were read, 416 lines counted
+within the trial#19 we found 104 reading sets, 0 events+markers, 0 info messages
+----------------------------------------
+processing file: log_2018_01_05_14_49_47_power.log
+479 lines were read, 476 lines counted
+within the trial#20 we found 119 reading sets, 0 events+markers, 0 info messages
+----------------------------------------
+processing file: log_2018_01_05_14_50_00_power.log
+487 lines were read, 484 lines counted
+within the trial#21 we found 121 reading sets, 0 events+markers, 0 info messages
+----------------------------------------
+processing file: log_2018_01_05_14_50_14_power.log
+451 lines were read, 448 lines counted
+within the trial#22 we found 112 reading sets, 0 events+markers, 0 info messages
+----------------------------------------
+processing file: log_2018_01_05_14_50_26_power.log
+499 lines were read, 496 lines counted
+within the trial#23 we found 124 reading sets, 0 events+markers, 0 info messages
+----------------------------------------
+processing file: log_2018_01_05_14_50_40_power.log
+475 lines were read, 472 lines counted
+within the trial#24 we found 118 reading sets, 0 events+markers, 0 info messages
+----------------------------------------
+processing file: log_2018_01_05_14_59_12_power.log
+511 lines were read, 508 lines counted
+within the trial#25 we found 127 reading sets, 0 events+markers, 0 info messages
+----------------------------------------
+processing file: log_2018_01_05_14_59_28_power.log
+459 lines were read, 456 lines counted
+within the trial#26 we found 114 reading sets, 0 events+markers, 0 info messages
+----------------------------------------
+processing file: log_2018_01_05_14_59_58_power.log
+579 lines were read, 576 lines counted
+within the trial#27 we found 144 reading sets, 0 events+markers, 0 info messages
+----------------------------------------
+processing file: log_2018_01_05_15_00_12_power.log
+551 lines were read, 548 lines counted
+within the trial#28 we found 137 reading sets, 0 events+markers, 0 info messages
+----------------------------------------
+processing file: log_2018_01_05_15_00_27_power.log
+527 lines were read, 524 lines counted
+within the trial#29 we found 131 reading sets, 0 events+markers, 0 info messages
+========================================
+processing trial 0: day 0 setup 0 round 0 ...
+------------------------
+	COULD NOT DETECT STEADY DURATION, STEADY DATA NOT RELIABLE
+------------------------
+processing trial 1: day 0 setup 0 round 1 ...
+------------------------
+	COULD NOT DETECT STEADY DURATION, STEADY DATA NOT RELIABLE
+------------------------
+processing trial 2: day 0 setup 0 round 2 ...
+------------------------
+	COULD NOT DETECT STEADY DURATION, STEADY DATA NOT RELIABLE
+------------------------
+processing trial 3: day 0 setup 0 round 3 ...
+------------------------
+	COULD NOT DETECT STEADY DURATION, STEADY DATA NOT RELIABLE
+------------------------
+processing trial 4: day 0 setup 0 round 4 ...
+------------------------
+	COULD NOT DETECT STEADY DURATION, STEADY DATA NOT RELIABLE
+------------------------
+processing trial 5: day 1 setup 0 round 0 ...
+------------------------
+	COULD NOT DETECT STEADY DURATION, STEADY DATA NOT RELIABLE
+------------------------
+processing trial 6: day 1 setup 0 round 1 ...
+------------------------
+	COULD NOT DETECT STEADY DURATION, STEADY DATA NOT RELIABLE
+------------------------
+processing trial 7: day 1 setup 0 round 2 ...
+------------------------
+	COULD NOT DETECT STEADY DURATION, STEADY DATA NOT RELIABLE
+------------------------
+processing trial 8: day 1 setup 0 round 3 ...
+------------------------
+	COULD NOT DETECT STEADY DURATION, STEADY DATA NOT RELIABLE
+------------------------
+processing trial 9: day 1 setup 0 round 4 ...
+------------------------
+	COULD NOT DETECT STEADY DURATION, STEADY DATA NOT RELIABLE
+------------------------
+processing trial 10: day 2 setup 0 round 0 ...
+------------------------
+	COULD NOT DETECT STEADY DURATION, STEADY DATA NOT RELIABLE
+------------------------
+processing trial 11: day 2 setup 0 round 1 ...
+------------------------
+	COULD NOT DETECT STEADY DURATION, STEADY DATA NOT RELIABLE
+------------------------
+processing trial 12: day 2 setup 0 round 2 ...
+------------------------
+	COULD NOT DETECT STEADY DURATION, STEADY DATA NOT RELIABLE
+------------------------
+processing trial 13: day 2 setup 0 round 3 ...
+------------------------
+	COULD NOT DETECT STEADY DURATION, STEADY DATA NOT RELIABLE
+------------------------
+processing trial 14: day 2 setup 0 round 4 ...
+------------------------
+	COULD NOT DETECT STEADY DURATION, STEADY DATA NOT RELIABLE
+------------------------
+processing trial 15: day 3 setup 0 round 0 ...
+------------------------
+	COULD NOT DETECT STEADY DURATION, STEADY DATA NOT RELIABLE
+------------------------
+processing trial 16: day 3 setup 0 round 1 ...
+------------------------
+	COULD NOT DETECT STEADY DURATION, STEADY DATA NOT RELIABLE
+------------------------
+processing trial 17: day 3 setup 0 round 2 ...
+------------------------
+	COULD NOT DETECT STEADY DURATION, STEADY DATA NOT RELIABLE
+------------------------
+processing trial 18: day 3 setup 0 round 3 ...
+------------------------
+	COULD NOT DETECT STEADY DURATION, STEADY DATA NOT RELIABLE
+------------------------
+processing trial 19: day 3 setup 0 round 4 ...
+------------------------
+	COULD NOT DETECT STEADY DURATION, STEADY DATA NOT RELIABLE
+------------------------
+processing trial 20: day 4 setup 0 round 0 ...
+------------------------
+	COULD NOT DETECT STEADY DURATION, STEADY DATA NOT RELIABLE
+------------------------
+processing trial 21: day 4 setup 0 round 1 ...
+------------------------
+	COULD NOT DETECT STEADY DURATION, STEADY DATA NOT RELIABLE
+------------------------
+processing trial 22: day 4 setup 0 round 2 ...
+------------------------
+	COULD NOT DETECT STEADY DURATION, STEADY DATA NOT RELIABLE
+------------------------
+processing trial 23: day 4 setup 0 round 3 ...
+------------------------
+	COULD NOT DETECT STEADY DURATION, STEADY DATA NOT RELIABLE
+------------------------
+processing trial 24: day 4 setup 0 round 4 ...
+------------------------
+	COULD NOT DETECT STEADY DURATION, STEADY DATA NOT RELIABLE
+------------------------
+processing trial 25: day 5 setup 0 round 0 ...
+------------------------
+	COULD NOT DETECT STEADY DURATION, STEADY DATA NOT RELIABLE
+------------------------
+processing trial 26: day 5 setup 0 round 1 ...
+------------------------
+	COULD NOT DETECT STEADY DURATION, STEADY DATA NOT RELIABLE
+------------------------
+processing trial 27: day 5 setup 0 round 2 ...
+------------------------
+	COULD NOT DETECT STEADY DURATION, STEADY DATA NOT RELIABLE
+------------------------
+processing trial 28: day 5 setup 0 round 3 ...
+------------------------
+	COULD NOT DETECT STEADY DURATION, STEADY DATA NOT RELIABLE
+------------------------
+processing trial 29: day 5 setup 0 round 4 ...
+------------------------
+	COULD NOT DETECT STEADY DURATION, STEADY DATA NOT RELIABLE
+------------------------
+----------------------------------------
+in total 30 trials processed
