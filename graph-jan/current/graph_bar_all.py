@@ -35,7 +35,7 @@ STR_GRAPH_TITLE = "Total Energy Comparison Over %d Trials"%(N_DAYS*N_ROUNDS)
 STR_Y_LABEL = "Total Energy (kJ)"
 #"Total Energy (kJ)"
 #"Energy/Meter (J/m)"
-STR_FILENAME = "total.eps"
+STR_FILENAME = "total.png"
 #"total.png"
 #"steady.png"
 #"metric_steady.png"
@@ -43,7 +43,7 @@ STR_FILENAME = "total.eps"
 APPLY_GRAPH_CUSTOMIZATION = True #yticks, ylimit range, etc.
 if TARGET_SETUP == "Angle":
     X_LABELS=["0","45","90","135","180", "270"] # forward, diagonal to left, side to right, diagonal to right, to back, side to right
-    SETUP_X_LABEL = "Turn (degree)"    # "Speed (m/s)"  or "Angle (deg)"
+    SETUP_X_LABEL = "Heading (degree)"    # "Speed (m/s)"  or "Angle (deg)"
 elif TARGET_SETUP == "Speed":
     X_LABELS=["5.0","5.0","5.0","5.0"]
     SETUP_X_LABEL = "Speed (m/s)"    # "Speed (m/s)"  or "Angle (deg)"
