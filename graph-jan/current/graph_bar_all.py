@@ -28,7 +28,7 @@ stds = [[] for _dummy in xrange(NUMBER_OF_DATA_COLUMNS)]
 
 COLUMN_TO_SHOW = 6 #each time one graph, this is the column number change this to generate new ones. start from 0, it is adjusted by FIRST_DATA_COLUMN
 COLUMN_TO_SHOW = COLUMN_TO_SHOW - FIRST_DATA_COLUMN 
-GRAPH_WITHOUT_OFFSET = True  #draw a graph with first offset taken off from all (for angle)
+GRAPH_WITHOUT_OFFSET = False  #draw a graph with first offset taken off from all (for angle)
 STR_GRAPH_TITLE = "Total Energy Comparison Over %d Trials"%(N_DAYS*N_ROUNDS)
 #"Total Energy Comparison Over %d Trials per Setup"%(N_DAYS*N_ROUNDS)
 #"Energy/Meter metric Over %d Trials per Setup"%(N_DAYS*N_ROUNDS)
@@ -153,9 +153,9 @@ if (APPLY_GRAPH_CUSTOMIZATION):
     y=[]
     for i in range(len(x)):
         y.append(0.0167*x[i]*45.0)
-    plt.plot(x,y, lw=BAR_LINE_WIDTH, color = 'b')
-    plt.text(2,8,r'$f{(\theta)} = \gamma\/\theta$', fontsize=32, ha='center')
-    plt.text(2,6.5,r'$\gamma = 0.0167$', fontsize=32, ha='center')
+#    plt.plot(x,y, lw=BAR_LINE_WIDTH, color = 'b')
+#    plt.text(2,8,r'$f{(\theta)} = \gamma\/\theta$', fontsize=32, ha='center')
+#    plt.text(2,6.5,r'$\gamma = 0.0167$', fontsize=32, ha='center')
 
 plt.tight_layout()
 plt.savefig(LOG_DIR+"/"+STR_GRAPHS+"/bar_"+TARGET_SETUP+"_"+STR_FILENAME,dpi=600) 
