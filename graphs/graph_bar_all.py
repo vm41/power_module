@@ -11,11 +11,11 @@ plt.rc("font", **font)
 plt.rcParams["pdf.fonttype"] = 42
 plt.rcParams["ps.fonttype"] = 42
 
-N_DAYS = 3 #number of whole sets
-N_ROUNDS = 4 #number of rounds
-N_SETUPS = 4 #number of setup/distance/speed/turn
-SETUPS_TO_SHOW = 3  # for example N_SETUP may be 4, but you don't want the last one.
-TARGET_SETUP = "Speed" #used in filename. either "Speed" or "Angle"
+N_DAYS = 1 #number of whole sets
+N_ROUNDS = 5 #number of rounds
+N_SETUPS = 6 #number of setup/distance/speed/turn
+SETUPS_TO_SHOW = 6  # for example N_SETUP may be 4, but you don't want the last one.
+TARGET_SETUP = "Angle" #used in filename. either "Speed" or "Angle"
 STR_GRAPHS='current_graphs' #folder in which the database is
 NUMBER_OF_DATA_COLUMNS = 15 #these are the columns containing values (will be read as float)
 FIRST_DATA_COLUMN = 5 #first column containing values (will be read as float)
@@ -35,24 +35,24 @@ STR_GRAPH_TITLE = "Total Energy Comparison Over %d Trials"%(N_DAYS*N_ROUNDS)
 STR_Y_LABEL = "Total Energy (kJ)"
 #"Total Energy (kJ)"
 #"Energy/Meter (J/m)"
-STR_FILENAME = "total.eps"
+STR_FILENAME = "total.png"
 #"total.png"
 #"steady.png"
 #"metric_steady.png"
 
 APPLY_GRAPH_CUSTOMIZATION = True #yticks, ylimit range, etc.
 if TARGET_SETUP == "Angle":
-    X_LABELS=["0","45","90","135","180"]
-    SETUP_X_LABEL = "Turn (degree)"    # "Speed (m/s)"  or "Angle (deg)"
+    X_LABELS=["0","45","90","135","180", "270"] # forward, diagonal to left, side to right, diagonal to right, to back, side to right
+    SETUP_X_LABEL = "Heading (degree)"    # "Speed (m/s)"  or "Angle (deg)"
 elif TARGET_SETUP == "Speed":
-    X_LABELS=["2.0","5.0","7.0","10.0"]
+    X_LABELS=["5.0","5.0","5.0","5.0"]
     SETUP_X_LABEL = "Speed (m/s)"    # "Speed (m/s)"  or "Angle (deg)"
 else:
     print "UNKNOWN TARGET_SETUP: ",TARGET_SETUP
     exit(0)
        
 BAR_LINE_WIDTH=3
-BAR_WIDTH = 0.1       # the width of the bars
+BAR_WIDTH = 0.133       # the width of the bars
 BAR_ERR_LINE_WIDTH = 8
 BAR_ERR_CAP_SIZE = 12
 BAR_ERR_CAP_THICK = 4
@@ -144,18 +144,18 @@ ax1.set_xticklabels(tuple(X_LABELS[:SETUPS_TO_SHOW]))
 
 ax1.set_ylabel(STR_Y_LABEL)
 if (APPLY_GRAPH_CUSTOMIZATION):
-    ax1.set_ylim(0,17)
+    ax1.set_ylim(0,2)
     ax1.set_xlim(-2*BAR_WIDTH,SETUPS_TO_SHOW-1+2*BAR_WIDTH)
     yticks = ax1.yaxis.get_major_ticks()
     yticks[-1].label1.set_visible(False)
     
-    #x = np.arange(0, SETUPS_TO_SHOW+1)
-    #y=[]
-    #for i in range(len(x)):
-    #    y.append(0.0167*x[i]*45.0)
-    #plt.plot(x,y, lw=BAR_LINE_WIDTH, color = 'b')
-    #plt.text(2,8,r'$f{(\theta)} = \gamma\/\theta$', fontsize=32, ha='center')
-    #plt.text(2,6.5,r'$\gamma = 0.0167$', fontsize=32, ha='center')
+    x = np.arange(0, SETUPS_TO_SHOW+1)
+    y=[]
+    for i in range(len(x)):
+        y.append(0.0167*x[i]*45.0)
+#    plt.plot(x,y, lw=BAR_LINE_WIDTH, color = 'b')
+#    plt.text(2,8,r'$f{(\theta)} = \gamma\/\theta$', fontsize=32, ha='center')
+#    plt.text(2,6.5,r'$\gamma = 0.0167$', fontsize=32, ha='center')
 
 plt.tight_layout()
 plt.savefig(LOG_DIR+"/"+STR_GRAPHS+"/bar_"+TARGET_SETUP+"_"+STR_FILENAME,dpi=600) 

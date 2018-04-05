@@ -1,10 +1,69 @@
+=======================================================================================
+We use FT232H breakout that connects to PC using USB and gives us I2C.
+in order to read it from python, we should:
+
+https://learn.adafruit.com/adafruit-ft232h-breakout/linux-setup
+
+
 To summarize, for using I2C you need to setup your hardware as follows:
 Connect FT232H D1 and D2 together with a jumper wire.  This combined connection is the I2C SDA data line.
 Add a 4.7 kilo-ohm resistor from the I2C SDA data line (pins D1 and D2 above) up to FT232H 5V.
 Add a 4.7 kilo-ohm resistor from FT232H D0 up to FT232H 5V.  This pin D0 is the I2C SCL clock line.
 
+=============================== Raspberry Pi i2c bus ===============================
 
-----------------------
+sudo apt-get install python-smbus
+sudo apt-get install i2c-tools
+
+Run sudo raspi-config .
+Use the down arrow to select 9 Advanced Options.
+Arrow down to A7 I2C .
+Select yes when it asks you to enable I2C.
+Also select yes when it tasks about automatically loading the kernel module.
+Use the right arrow to select the <Finish> button.
+Select yes when it asks to reboot.
+
+then try 
+
+sudo i2cdetect -y 0
+//or
+sudo i2cdetect -y 1
+
+=============================== Linux FTDI232 ===============================
+
+mkdir measure
+cd measure
+sudo apt-get update
+sudo apt-get install build-essential libusb-1.0-0-dev swig cmake python-dev libconfuse-dev libboost-all-dev
+wget http://www.intra2net.com/en/developer/libftdi/download/libftdi1-1.2.tar.bz2
+tar xvf libftdi1-1.2.tar.bz2
+cd libftdi1-1.2
+mkdir build
+cd build
+cmake -DCMAKE_INSTALL_PREFIX="/usr/" -DPYTHON_INCLUDE_DIR="/usr/include/python2.7" -DPYTHON_LIBRARIES="/usr/lib/python2.7/" ../
+make
+sudo make install
+----------------------------
+
+Next download the Adafruit Python GPIO library by clicking the button below (or have it offline):
+
+cd ../..
+wget https://github.com/adafruit/Adafruit_Python_GPIO/archive/master.zip
+unzip master.zip
+cd Adafruit_Python_GPIO-master/
+
+
+sudo python setup.py install
+----------------------------
+
+then this should be okay to run without any errorcd :
+python
+import Adafruit_GPIO
+import ftdi1
+quit()
+
+=============================== Windows FTDI232 ===============================
+
 if the PC cannot open FTDI, we need to replace the USB driver, using zadig.
 maybe this has happened before on a separate USB port, try other USB ports and check first.
 
