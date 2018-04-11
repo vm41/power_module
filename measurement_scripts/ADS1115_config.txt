@@ -1,0 +1,51 @@
+ACS712 current sensor is simple
+
+it states in the datasheet that it is supposed to cover -20 to 20 Amper with a sensitivity of 100mv/A
+and should output a voltage of VCC*0.5 for 0 current. so that should be around 2.4V for 4.8 VCC.
+The ADC + 4 sensors connected to the pi, in working condition, have a VCC of 4.94V (pi's 5V VDD was 4.95, so almost no drop)
+
+*VCC should be a parameter in the measurements scripts
+
+ADS1115 ADC is supposed to convert the sensor output voltage to digital data and send through i2c
+https://www.adafruit.com/product/1085
+
+datasheet pages 3, 11, 13, 17, 18, 19
+
+it has a pointer register which defines the behavior, if we write to address 00 the pointer would point to converstion register
+and if we write tot address 01 that is config register.
+
+we have to config it first since the default mode is power-down sigle-shot mode and we want continuous. also it is differential by default, but we want 4 single channels.
+(and we have to cycle through different chanels for measurement of 4 motors)
+
+we don't have to do anything with threshold registers.
+
+for CONFIG, we should write to address 0x01. the byte is as follows:
+OS(1) - MUX(3) - PGA(3) - MODE(1)
+
+MUX is for singe chanels:
+100 A0
+101 A1
+110 A2
+111 A3
+
+PGA is the gain which defines full scale range.
+000 2/3 -> full scale = 6.144v
+001 1/1 -> full scale = 4.096v
+
+MODE
+0 continuous
+1 single shot
+
+for now we choose 001. why? since from 4V to 2.5V is about 1.5V which gives us a range of 15A in motor consumption.
+if we see higher currents in the motors while full thrust, we can change this PGA to 000. note that this will NOT do harm to anything.
+since the current sensor can not output more than VCC, which could have been bad for the ADC. so if anything larger than the full scale is the output of 
+the sensor, we will get the maximum number in ADC (32767)
+
+so for now we write 
+0xC283 #11000010 10000011 #OS=1 MUX=100,A0_GND  PGA=001,1/1 MODE=0,cont. second byte default
+0xD283 #11010010 10000011 #OS=1 MUX=101,A1_GND  PGA=001,1/1 MODE=0,cont. second byte default
+0xE283 #11100010 10000011 #OS=1 MUX=110,A2_GND  PGA=001,1/1 MODE=0,cont. second byte default
+0xF283 #11110010 10000011 #OS=1 MUX=111,A3_GND  PGA=001,1/1 MODE=0,cont. second byte default
+
+
+default data rate is 128 SPS?? let's do measurements of 100Hz, so 8ms delay.

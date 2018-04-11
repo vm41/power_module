@@ -1,0 +1,29 @@
+ACS712 current sensor is simple
+
+it states in the datasheet that it is supposed to cover -20 to 20 Amper with a sensitivity of 100mv/A
+and should output a voltage of VCC*0.5 for 0 current. so that should be around 2.4V for 4.8 VCC.
+The ADC + 4 sensors connected to the pi, in working condition, have a VCC of 4.94V (pi's 5V VDD was 4.95, so almost no drop)
+
+*VCC should be a parameter in the measurements scripts
+
+ADC128d818 ADC is supposed to convert the sensor output voltage to digital data and send through i2c
+
+datasheet pages 8, 16, 17 ...  28 for applications
+
+* Among modes 0,1,2,3 we choose mode1 which has 8 single ended channels.
+* continues conversion time is 12 ms
+* if the external VREF is preferred, use the Advanced Configuration Register — Address 0Bh to change this setting.
+* Default i2c address is A0=MID, A1=MID which translate to 0x2E
+
+* The device needs to be in shutdown mode (address 00h, bit 0), then
+* Need to set it to continuous mode
+* Need to disable unused inputs
+
+Advanced Configuration Register — Address 0Bh
+Default Value [7:0] = 0000_0000 binary
+Bit
+0     External ref. 0 for internal, 1 for external
+[2:1] Mode[1:0]  0,1,2,3  
+
+Channel Readings Registers — Addresses 20h – 27h
+
