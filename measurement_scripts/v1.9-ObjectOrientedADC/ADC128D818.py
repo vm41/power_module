@@ -99,7 +99,7 @@ class ADC128D818:
 	def __init__(self, i2c_bus, address):
 		self.i2c_bus = i2c_bus
 		self.address = address
-		self.channel_bias = [0.0]*8
+		self.channel_bias = [0.0]*self.NUMBER_OF_CHANNELS                
 
 	#Configuring the settings that control channel configuration and function
 	#MUST STOP THE ADC BEFORE INITIALIZING
@@ -162,17 +162,17 @@ class ADC128D818:
 	def read_channel(self, channel):
 		reading = i2c_utilities.read(self.i2c_bus, self.address, ADC_REG.Channel_Readings_Registers + channel, 2)
 		real_reading = i2c_utilities.reverse_endian(reading) >> 4 #flip byte order and trim extra 0's
-		unbiased_reading = real_reading - self.channel_bias[channel]
-		converted_reading = (unbiased_reading * self.Vref) / 4095
-		if(converted_reading < 0): #No negative values
-			converted_reading = 0
-		return converted_reading
+		converted_reading = (real_reading * self.Vref) / 4095
+                unbiased_reading = converted_reading - self.channel_bias[channel]
+		if(unbiased_reading < 0): #No negative values
+			unbiased_reading = 0
+		return unbiased_reading
 
 	def read_channel_uncalibrated(self, channel):
 		reading = i2c_utilities.read(self.i2c_bus, self.address, ADC_REG.Channel_Readings_Registers + channel, 2)
 		real_reading = i2c_utilities.reverse_endian(reading) >> 4 #flip byte order and trim extra 0's
 		converted_reading = (real_reading * self.Vref) / 4095
-		return real_reading
+                return converted_reading
 
 	def read_register(self, register, num_bytes):
 		return i2c_utilities.read(self.i2c_bus, self.address, register, num_bytes) 
@@ -184,6 +184,7 @@ class ADC128D818:
 		for i in range(0, constants.CALIBRATION_SAMPLES):
 			sum += self.read_channel_uncalibrated(channel)
 		self.channel_bias[channel] = (sum / constants.CALIBRATION_SAMPLES)
+                print "calibrated channel %d : %f "%(channel, self.channel_bias[channel])
 	
 	#Turning on the ADC and its interrupt function
 	def start(self):

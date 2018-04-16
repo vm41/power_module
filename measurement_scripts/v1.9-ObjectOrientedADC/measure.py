@@ -46,6 +46,9 @@ if MODE_SELECT == PROGRAM_MODE.PC:
 	ft232h = FT232H.FT232H() #Find the first FT232H device.
 	i2c = FT232H.I2CDevice(ft232h, ADC_ADDRESS.MID_MID) # Create an I2C device at address.
 
+#create the ADC object
+adc = ADC128D818(i2c, ADC_ADDRESS.MID_MID)
+
 ###########################################################################################
 def open_session():
 	global DUMP_FILE
@@ -89,32 +92,6 @@ def logging():
 	myFile.write(LOG_HEADER)
 	myFile.write("\n")
 
-
-	#create the ADC object
-	adc = ADC128D818(i2c, ADC_ADDRESS.MID_MID)
-	#intialize the ADC to 8 single ended inputs, external VREF, continuous
-	#sampling and no masked channels or interrupts
-	adc.initialize(ADC_MODE.MODE_1, ADC_VREF.EXT, ADC_RATE.CONTINUOUS, 0, 0)
-
-	#Setting the limits for each channel from 0 to vref
-	for c in range(0, adc.NUMBER_OF_CHANNELS):
-		adc.initialize_limit(c, ADC_LIMIT.HIGH, 0x80)
-		adc.initialize_limit(c, ADC_LIMIT.LOW, 0)
-
-	#Start the ADC
-	adc.start()
-
-	#Here is where channels would be calibrated
-	#call adc.calibrate(channel) for each channel that has an initial input
-	#voltage of 0, e.g the motors are initially off so their current
-	#consumption is 0 while the PI wil already be drawing current and therefore
-	#cant be calibrated to account fo a zero input response
-	adc.calibrate(0)
-	adc.calibrate(3)
-	adc.calibrate(4)
-	adc.calibrate(5)
-	adc.calibrate(6)
-	adc.calibrate(7)
 
 	myBuffer = []
 	avg = [0.0] * adc.NUMBER_OF_CHANNELS
@@ -166,7 +143,7 @@ def logging():
 			if(channel >= adc.NUMBER_OF_CHANNELS):
 				channel = 0
 
-			if (MODE_SELECT == PROGRAM_MODE.PC and VERBOS_AVERAGE_WINDOW > 0 and count % (adc.NUMBER_OF_CHANNELS * VERBOS_AVERAGE_WINDOW) == 0):
+                        if (MODE_SELECT == PROGRAM_MODE.PC and VERBOS_AVERAGE_WINDOW > 0 and count % (adc.NUMBER_OF_CHANNELS * VERBOS_AVERAGE_WINDOW) == 0):
 				myStr = "\n--- Average over last " + str(VERBOS_AVERAGE_WINDOW) + " measurements ---\n"
 				for i in range(0, adc.NUMBER_OF_CHANNELS):
 					myStr += "channel " + str(i) + " " + str(avg[i] / VERBOS_AVERAGE_WINDOW) + "\n"
@@ -200,6 +177,31 @@ dump("STARTED PROGRAM")
 dump("Writing logs to folder: %s" % (LOG_DIR + "/" + SESSION_DIR))
 dump("Make sure your constant.py file is set. MODE_SELECT, VDD, and LOG_DIR are important for logging")
 dump("Currently these values are: %d, %5.3f, %s" % (MODE_SELECT, VDD, LOG_DIR))
+
+#intialize the ADC to 8 single ended inputs, external VREF, continuous	#sampling and no masked channels or interrupts
+#sampling and no masked channels or interrupts
+adc.initialize(ADC_MODE.MODE_1, ADC_VREF.EXT, ADC_RATE.CONTINUOUS, 0, 0)
+
+#Setting the limits for each channel from 0 to vref
+for c in range(0, adc.NUMBER_OF_CHANNELS):
+	adc.initialize_limit(c, ADC_LIMIT.HIGH, 0x80)
+	adc.initialize_limit(c, ADC_LIMIT.LOW, 0)
+
+#Start the ADC
+adc.start()
+
+#Here is where channels would be calibrated
+#call adc.calibrate(channel) for each channel that has an initial input
+#voltage of 0, e.g the motors are initially off so their current
+#consumption is 0 while the PI wil already be drawing current and therefore
+#cant be calibrated to account fo a zero input response
+adc.calibrate(0)
+adc.calibrate(1)
+adc.calibrate(3)
+adc.calibrate(4)
+adc.calibrate(5)
+adc.calibrate(6)
+adc.calibrate(7)
 
 ADDR = (HOST,constants.PWR_PORT)
 serversock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

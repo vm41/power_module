@@ -16,7 +16,7 @@ class PROGRAM_MODE:
     PC = 1
     PC_SIMULATE_DATA = 2
 
-MODE_SELECT = PROGRAM_MODE.PC
+MODE_SELECT = PROGRAM_MODE.PI
 PWR_PORT = 35760
 PACKET_END = '\r\r\n\n'
 VDD = 5.0 #actual voltage on a 5V pin powering the measurement module as float

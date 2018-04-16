@@ -6,7 +6,7 @@ def reverse_endian(value):
 
 def write(i2c_bus, address, register, data):
 	if MODE_SELECT == PROGRAM_MODE.PI:
-		i2c_bus.write_word_data(address, register, data)
+		i2c_bus.write_byte_data(address, register, data)
 	if MODE_SELECT == PROGRAM_MODE.PC:
 		i2c_bus.write8(register, data)
 	if MODE_SELECT == PROGRAM_MODE.PC_SIMULATE_DATA:
@@ -16,7 +16,7 @@ def write(i2c_bus, address, register, data):
 def read(i2c_bus, address, register, num_bytes):
 	if num_bytes == 1:
 		if MODE_SELECT == PROGRAM_MODE.PI:
-			data = i2c_bus.read_word_data(address, register)
+			data = i2c_bus.read_byte_data(address, register)
 		if MODE_SELECT == PROGRAM_MODE.PC:
 			data = i2c_bus.readU8(register)
 		if MODE_SELECT == PROGRAM_MODE.PC_SIMULATE_DATA:
