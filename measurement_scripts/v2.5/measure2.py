@@ -10,11 +10,16 @@ from ADC128D818 import *
 # importing the Transformation file
 from Transformation import *
 #Mode selection
-if MODE_SELECT==PROGRAM_MODE.HW:
+if MODE_SELECT == PROGRAM_MODE.PI:
     import smbus
-if MODE_SELECT==PROGRAM_MODE.HW_IN_THE_LOOP:
+if MODE_SELECT == PROGRAM_MODE.PC:
     import Adafruit_GPIO.FT232H as FT232H
-
+if MODE_SELECT == PROGRAM_MODE.PI:
+    i2c = smbus.SMBus(1)
+if MODE_SELECT == PROGRAM_MODE.PC:
+    FT232H.use_FT232H() # Temporarily disable FTDI serial drivers.
+    ft232h = FT232H.FT232H() #Find the first FT232H device.
+    i2c = FT232H.I2CDevice(ft232h, ADC_ADDRESS.MID_MID) # Create an I2C device at address.
 class Measure(object):
     """Encapsulates all the necessary functions and attributes required for logging the current measurement:
 
@@ -69,12 +74,12 @@ class Measure(object):
         if not os.path.exists(LOG_DIR):
             os.makedirs(LOG_DIR)
         # new addition
-        if MODE_SELECT == PROGRAM_MODE.PI:
-            self.i2c = smbus.SMBus(1)
-        if MODE_SELECT == PROGRAM_MODE.PC:
-            FT232H.use_FT232H() # Temporarily disable FTDI serial drivers.
-            ft232h = FT232H.FT232H() #Find the first FT232H device.
-            self.i2c = FT232H.I2CDevice(ft232h, ADC_ADDRESS.MID_MID) # Create an I2C device at address.
+        # if MODE_SELECT == PROGRAM_MODE.PI:
+        #     self.i2c = smbus.SMBus(1)
+        # if MODE_SELECT == PROGRAM_MODE.PC:
+        #     FT232H.use_FT232H() # Temporarily disable FTDI serial drivers.
+        #     ft232h = FT232H.FT232H() #Find the first FT232H device.
+        #     self.i2c = FT232H.I2CDevice(ft232h, ADC_ADDRESS.MID_MID) # Create an I2C device at address.
         ################
         ### redundant    
         # if MODE_SELECT==PROGRAM_MODE.HW:
@@ -143,12 +148,12 @@ class Measure(object):
     def calibrate(self):
         self.dump("calibrating sensors, motors should not be running...")
         if MODE_SELECT==PROGRAM_MODE.SW_IN_THE_LOOP:
-            self.LEVEL_LIST=[VDD/2.0]*NUMBER_OF_CHANNELS
+            self.LEVEL_LIST=[VDD/2.0]*self.adc.NUMBER_OF_CHANNELS
             self.dump("SW_IN_THE_LOOP detected, calibrating all motors with default value: %.3f"%(VDD/2.0))
         else:
-            self.LEVEL_LIST=[None]*NUMBER_OF_CHANNELS
+            self.LEVEL_LIST=[None]*self.adc.NUMBER_OF_CHANNELS
             try:
-                for channel in range(NUMBER_OF_CHANNELS):
+                for channel in range(self.adc.NUMBER_OF_CHANNELS):
                     calibrate_sum = 0.0
                     for sample in range(CALIBRATE_SAMPLES):
                         value=self.I2C_CONFIG
@@ -164,7 +169,7 @@ class Measure(object):
                 self.dump("calibration successful")
             except:
                 self.dump("calibration failed, using default value=%.3f for all channels, results might not be correct"%(VDD/2.0))
-                for channel in range(NUMBER_OF_CHANNELS):
+                for channel in range(self.adc.NUMBER_OF_CHANNELS):
                     self.LEVEL_LIST[channel]=VDD/2.0
 
     ###########################################################################################
@@ -186,7 +191,7 @@ class Measure(object):
         myFile.write("\n")
 
         myBuffer=[]
-        avg=[0.0]*NUMBER_OF_CHANNELS
+        avg=[0.0]*self.adc.NUMBER_OF_CHANNELS
         while True:
             try:
                 now=time.time()
@@ -246,14 +251,14 @@ class Measure(object):
                 #     avg[channel]+=current
 
                 channel=channel+1
-                if (channel>=NUMBER_OF_CHANNELS):
+                if (channel>=self.adc.NUMBER_OF_CHANNELS):
                     channel=0
 
                 count+=1
                 if(channel >= self.adc.NUMBER_OF_CHANNELS):# my be 4, or 8
                     channel = 0
 
-                            if (MODE_SELECT == PROGRAM_MODE.PC and VERBOS_AVERAGE_WINDOW > 0 and count % (self.adc.NUMBER_OF_CHANNELS * VERBOS_AVERAGE_WINDOW) == 0):
+                if (MODE_SELECT == PROGRAM_MODE.PC and VERBOS_AVERAGE_WINDOW > 0 and count % (self.adc.NUMBER_OF_CHANNELS * VERBOS_AVERAGE_WINDOW) == 0):
                     myStr = "\n--- Average over last " + str(VERBOS_AVERAGE_WINDOW) + " measurements ---\n"
                     for i in range(0, self.adc.NUMBER_OF_CHANNELS):
                         myStr += "channel " + str(i) + " " + str(avg[i] / VERBOS_AVERAGE_WINDOW) + "\n"
@@ -403,3 +408,4 @@ if __name__ == '__main__':
             time.sleep(1.0)
             exit()
          
+

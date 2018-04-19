@@ -180,7 +180,8 @@ dump("Currently these values are: %d, %5.3f, %s" % (MODE_SELECT, VDD, LOG_DIR))
 
 #intialize the ADC to 8 single ended inputs, external VREF, continuous	#sampling and no masked channels or interrupts
 #sampling and no masked channels or interrupts
-adc.initialize(ADC_MODE.MODE_1, ADC_VREF.EXT, ADC_RATE.CONTINUOUS, 0, 0)
+#adc.initialize(ADC_MODE.MODE_1, ADC_VREF.EXT, ADC_RATE.CONTINUOUS, 0, 0)
+adc.initialize(ADC_MODE.MODE_1, ADC_VREF.EXT, ADC_RATE.CONTINUOUS, ADC_ENABLE.IN2 | ADC_ENABLE.IN3 | ADC_ENABLE.IN4 | ADC_ENABLE.IN5, 0)#Motors only
 
 #Setting the limits for each channel from 0 to vref
 for c in range(0, adc.NUMBER_OF_CHANNELS):
@@ -197,6 +198,7 @@ adc.start()
 #cant be calibrated to account fo a zero input response
 adc.calibrate(0)
 adc.calibrate(1)
+adc.calibrate(2)
 adc.calibrate(3)
 adc.calibrate(4)
 adc.calibrate(5)
