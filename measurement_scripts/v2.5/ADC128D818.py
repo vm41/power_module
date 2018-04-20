@@ -91,7 +91,7 @@ class Advanced_Configuration_Register:
 	Mode_Select_0 = 1 << 1
 	Mode_Select_1 = 1 << 2
 class Conversion_Rate_Register:
-   Rate_Register = 1 << 0
+	Rate_Register = 1 << 0
 
 class ADC128D818:
 	NUMBER_OF_CHANNELS = 8
