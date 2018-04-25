@@ -221,8 +221,6 @@ class Measure(object):
                         for item in myBuffer:
                             myFile.write("%s\n" % item)
                         myFile.flush()
-                        # new line
-                        self.adc.stop()
                         break
 
                 # new line, reading adc channel value
