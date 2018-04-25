@@ -105,6 +105,9 @@ class ADC128D818:
 	#MUST STOP THE ADC BEFORE INITIALIZING
 	def initialize(self, mode, vref, rate, mask_channel, mask_interrputs):
 		time.sleep(0.1) #wait to ensure the ADC is finished booting
+		self.stop() #make sure the ADC is stopped
+		i2c_utilities.write(self.i2c_bus, self.address, ADC_REG.Deep_Shutdown_Register, 0) #make sure the ADC is not in deep shutdown
+		time.sleep(0.1)
 		#Programming the Advanced Configuration Register
 		data = 0
 

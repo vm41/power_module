@@ -128,7 +128,6 @@ def logging():
 					for item in myBuffer:
 						myFile.write("%s\n" % item)
 					myFile.flush()
-					adc.stop()
 					break
 
 			current = adc.read_channel(channel)
