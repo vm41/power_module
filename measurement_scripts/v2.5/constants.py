@@ -16,6 +16,12 @@ class PROGRAM_MODE:
     PC = 1
     PC_SIMULATE_DATA = 2
 
+class SENSOR_TYPE:
+    DISABLE = 0
+    VOLTAGE = 1
+    HALL = 2
+    SHUNT = 3
+
 MODE_SELECT = PROGRAM_MODE.PI
 PWR_PORT = 35760
 PACKET_END = '\r\r\n\n'
@@ -35,3 +41,15 @@ LOG_DIR = "current"
 #this string is just for information, it is printed
 #on the second line of the log file after startTime
 LOG_HEADER = "#time		#event_type	#event_data(channel&current(A), MarkNumber, ..."
+
+
+CHANNEL_SENSOR_MAP = [
+        SENSOR_TYPE.HALL,           #channel 0
+        SENSOR_TYPE.HALL, 
+        SENSOR_TYPE.DISABLE, 
+        SENSOR_TYPE.DISABLE, 
+        SENSOR_TYPE.VOLTAGE, 
+        SENSOR_TYPE.DISABLE, 
+        SENSOR_TYPE.HALL, 
+        SENSOR_TYPE.HALL            #channel 7
+        ]

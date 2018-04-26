@@ -104,11 +104,11 @@ class ADC128D818:
 
 	#Configuring the settings that control channel configuration and function
 	#MUST STOP THE ADC BEFORE INITIALIZING
-	def initialize(self, mode, vref, rate, mask_channel, mask_interrputs):
-		time.sleep(0.1) #wait to ensure the ADC is finished booting
+	def initialize(self, mode, vref, rate, channels_to_measure, mask_interrupts):
+		time.sleep(0.5) #wait to ensure the ADC is finished booting
 		self.stop() #make sure the ADC is stopped
 		i2c_utilities.write(self.i2c_bus, self.address, ADC_REG.Deep_Shutdown_Register, 0) #make sure the ADC is not in deep shutdown
-		time.sleep(0.1)
+		time.sleep(0.5)
 		#Programming the Advanced Configuration Register
 		data = 0
 
@@ -147,13 +147,30 @@ class ADC128D818:
 		#Choose to enable/disable mask_channel with the Channel Disable Register
 		#The nth bit channel is disabled if set to 1
 		#For example to disable ch 3 mask_channel = 00001000
+                bit_index = 1
+                mask_channel = 0
+                for ch in range(self.NUMBER_OF_CHANNELS):
+                    if ch not in channels_to_measure:
+                        mask_channel |= bit_index
+                    else:
+                        #Setting the limits for each channel from 0 to vref during initialize
+                        self.initialize_limit(ch, ADC_LIMIT.HIGH, 0x80)
+                        self.initialize_limit(ch, ADC_LIMIT.LOW, 0)
+
+                    bit_index = bit_index << 1
+
 		i2c_utilities.write(self.i2c_bus, self.address, ADC_REG.Channel_Disable_Register, mask_channel)
 
 		#Using the Interrupt Mask Register
 		#the nth bit channel is prevented from sending an interrupt signal
 		#For example to prevent channel 3 from causing an interrupt
 		#mask_interrupts = 00001000
-		i2c_utilities.write(self.i2c_bus, self.address, ADC_REG.Interrupt_Mask_Register, mask_interrputs)
+		i2c_utilities.write(self.i2c_bus, self.address, ADC_REG.Interrupt_Mask_Register, mask_interrupts)
+
+                #starting the sensor
+                time.sleep(0.5)
+                self.start()
+                time.sleep(0.1)
 	
 	#Setting the high/low limit for each channel, an interrupt
 	#will be thrown if the channel exceeds these limits

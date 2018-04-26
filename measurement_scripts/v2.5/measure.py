@@ -8,7 +8,7 @@ from threading import Thread
 # importing the ADC class file
 from ADC128D818 import *
 # importing the Transformation file
-from Transformation import *
+from Conversion import *
 #Mode selection
 if MODE_SELECT == PROGRAM_MODE.PI:
     import smbus
@@ -107,71 +107,6 @@ class Measure(object):
         self.DUMP_FILE.write(newStr+"\n")
         self.DUMP_FILE.flush()
 
-    # # ###########################################################################################
-    def i2c_write(self, reg, val):
-        reverse = (val%256)*256 + (val/256) #reformatting the responses for byte order:  0xAaBb => 0xBbAa
-        if MODE_SELECT==PROGRAM_MODE.HW:
-            self.i2c.write_word_data(self.DEV_ADDRESS, reg, reverse)
-        if MODE_SELECT==PROGRAM_MODE.HW_IN_THE_LOOP:
-            self.i2c.write16(reg,reverse)
-        if MODE_SELECT==PROGRAM_MODE.SW_IN_THE_LOOP:
-            time.sleep(0.1)
-            pass
-    # # ###########################################################################################
-    def i2c_wait_to_read(self):
-        if MODE_SELECT==PROGRAM_MODE.HW:
-            time.sleep(0.010)
-            while (self.i2c_read(self.I2C_REG_CONF)<32768):
-                pass
-        if MODE_SELECT==PROGRAM_MODE.HW_IN_THE_LOOP:
-            time.sleep(0.010)
-            while (self.i2c_read(self.I2C_REG_CONF)<32768):
-                pass
-        if MODE_SELECT==PROGRAM_MODE.SW_IN_THE_LOOP:
-            pass
-
-    ############################################################################################
-    def i2c_read(self, reg):
-        if MODE_SELECT==PROGRAM_MODE.HW:
-            reverse=self.i2c.read_word_data(self.DEV_ADDRESS,reg)
-        if MODE_SELECT==PROGRAM_MODE.HW_IN_THE_LOOP:
-            reverse=self.i2c.readU16(reg)
-        if MODE_SELECT==PROGRAM_MODE.SW_IN_THE_LOOP:
-            time.sleep(0.001)
-            reverse=random.uniform(3.0,3.5)/self.ADC_SCALE  # this is an example value which relates to around 3-4V
-            reverse = (reverse%256)*256 + (reverse/256) #reformatting the responses for byte order:  0xAaBb => 0xBbAa
-
-        result = (reverse%256)*256 + (reverse/256) #reformatting the responses for byte order:  0xAaBb => 0xBbAa
-        return result
-
-    ###########################################################################################
-    def calibrate(self):
-        self.dump("calibrating sensors, motors should not be running...")
-        if MODE_SELECT==PROGRAM_MODE.SW_IN_THE_LOOP:
-            self.LEVEL_LIST=[VDD/2.0]*self.adc.NUMBER_OF_CHANNELS
-            self.dump("SW_IN_THE_LOOP detected, calibrating all motors with default value: %.3f"%(VDD/2.0))
-        else:
-            self.LEVEL_LIST=[None]*self.adc.NUMBER_OF_CHANNELS
-            try:
-                for channel in range(self.adc.NUMBER_OF_CHANNELS):
-                    calibrate_sum = 0.0
-                    for sample in range(CALIBRATE_SAMPLES):
-                        value=self.I2C_CONFIG
-                        value+=channel*self.MUX_MULTIPLIER
-                        self.i2c_write(self.I2C_REG_CONF, value)
-                        self.i2c_wait_to_read()
-                        value=self.i2c_read(self.I2C_REG_CONV)
-                        voltage=value * self.ADC_SCALE
-                        calibrate_sum += voltage
-
-                    self.LEVEL_LIST[channel] = calibrate_sum / CALIBRATE_SAMPLES
-                    self.dump("channel %d calibrated with %d samples: %.3f"%(channel, CALIBRATE_SAMPLES, self.LEVEL_LIST[channel]))
-                self.dump("calibration successful")
-            except:
-                self.dump("calibration failed, using default value=%.3f for all channels, results might not be correct"%(VDD/2.0))
-                for channel in range(self.adc.NUMBER_OF_CHANNELS):
-                    self.LEVEL_LIST[channel]=VDD/2.0
-
     ###########################################################################################
     def logging(self):
         time.sleep(0.1)
@@ -193,6 +128,9 @@ class Measure(object):
         myBuffer=[]
         avg=[0.0]*self.adc.NUMBER_OF_CHANNELS
         while True:
+            channel=channel+1
+            if (channel>=self.adc.NUMBER_OF_CHANNELS):
+                channel=0
             try:
                 now=time.time()
                 if (channel==0):
@@ -223,53 +161,31 @@ class Measure(object):
                         myFile.flush()
                         break
 
+                if CHANNEL_SENSOR_MAP[channel] == SENSOR_TYPE.DISABLE:
+                    continue
+
                 # new line, reading adc channel value
-                current = self.adc.read_channel(channel)
-                #create the Transformation object
-                sensorStep = Transformation(1)
-                current = sensorStep.transform(current)
-                ##
+                raw_reading = self.adc.read_channel(channel)
 
-                ### redundant################
-                #value=self.I2C_CONFIG
-                #value+=channel*self.MUX_MULTIPLIER
-                #self.i2c_write(self.I2C_REG_CONF,value)
-                #self.i2c_wait_to_read()
-                #value=self.i2c_read(self.I2C_REG_CONV)
-                #voltage=value * self.ADC_SCALE
-                #current = (voltage - self.LEVEL_LIST[channel]) / self.SENSOR_STEP
-                #if current<0:   # no negative value
-                #    current = 0
+                #convert the readings if required
+                sensorStep = Conversion()
+                channel_data = sensorStep.convert(CHANNEL_SENSOR_MAP[channel], raw_reading)
+
                 ################
-                myLine="%14.3f"%(now)+"\t"+str(EVENT_TYPE.MEASUREMENT)+"\t"+"%d"%(channel)+"\t"+"%6.2f"%(current)
+                myLine="%14.3f"%(now)+"\t"+str(EVENT_TYPE.MEASUREMENT)+"\t"+"%d"%(channel)+"\t"+"%6.2f"%(channel_data)
                 myBuffer.append(myLine)
-                if MODE_SELECT == PROGRAM_MODE.PC:
-                    avg[channel]+=current
-                # if MODE_SELECT==PROGRAM_MODE.HW_IN_THE_LOOP:
-                #     avg[channel]+=current
+                
+                if (MODE_SELECT == PROGRAM_MODE.PC):
+                    avg[channel]+=channel_data
 
-                channel=channel+1
-                if (channel>=self.adc.NUMBER_OF_CHANNELS):
-                    channel=0
+                    if (VERBOS_AVERAGE_WINDOW > 0 and count % (self.adc.NUMBER_OF_CHANNELS * VERBOS_AVERAGE_WINDOW) == 0):
+                        myStr = "\n--- Average over last " + str(VERBOS_AVERAGE_WINDOW) + " measurements ---\n"
+                        for i in range(0, self.adc.NUMBER_OF_CHANNELS):
+                            myStr += "channel " + str(i) + " " + str(avg[i] / VERBOS_AVERAGE_WINDOW) + "\n"
+                        self.dump(myStr)
+                        avg = [0.0] * self.adc.NUMBER_OF_CHANNELS
 
                 count+=1
-                if(channel >= self.adc.NUMBER_OF_CHANNELS):# my be 4, or 8
-                    channel = 0
-
-                if (MODE_SELECT == PROGRAM_MODE.PC and VERBOS_AVERAGE_WINDOW > 0 and count % (self.adc.NUMBER_OF_CHANNELS * VERBOS_AVERAGE_WINDOW) == 0):
-                    myStr = "\n--- Average over last " + str(VERBOS_AVERAGE_WINDOW) + " measurements ---\n"
-                    for i in range(0, self.adc.NUMBER_OF_CHANNELS):
-                        myStr += "channel " + str(i) + " " + str(avg[i] / VERBOS_AVERAGE_WINDOW) + "\n"
-                    self.dump(myStr)
-                    avg = [0.0] * self.adc.NUMBER_OF_CHANNELS
-                # if MODE_SELECT==PROGRAM_MODE.HW_IN_THE_LOOP and self.VERBOS_AVERAGE_WINDOW>0 and count%(NUMBER_OF_CHANNELS*self.VERBOS_AVERAGE_WINDOW)==0:
-                #     myStr = "--- Average over last " + str(self.VERBOS_AVERAGE_WINDOW) + " measurements ---\n"
-                #     for i in range(NUMBER_OF_CHANNELS):
-                #         myStr += "channel "+str(i)+" " + str(avg[i]/self.VERBOS_AVERAGE_WINDOW) + "\n"
-                #     self.dump(myStr)
-                #     avg=[0.0] * NUMBER_OF_CHANNELS
-
-
                 if (count>=LOG_BUFF_COUNT):
                     finish_time=now
                     myLine = "%14.3f: logged %d measurements. duration: %8.3f seconds"%(now,count,finish_time-last_time)
@@ -292,30 +208,26 @@ if __name__ == '__main__':
     #create the ADC object
     adc = ADC128D818(i2c, ADC_ADDRESS.MID_MID)
 
-    # new entries
     #intialize the ADC to 8 single ended inputs, external VREF, continuous  #sampling and no masked channels or interrupts
     #sampling and no masked channels or interrupts
-    adc.initialize(ADC_MODE.MODE_1, ADC_VREF.EXT, ADC_RATE.CONTINUOUS, 0, 0)
+    channels_to_measure = []
+    for ch in range(adc.NUMBER_OF_CHANNELS):
+        if (CHANNEL_SENSOR_MAP[ch] != SENSOR_TYPE.DISABLE):
+            channels_to_measure.append(ch)
 
-    #Setting the limits for each channel from 0 to vref
-    for c in range(0, adc.NUMBER_OF_CHANNELS):
-        adc.initialize_limit(c, ADC_LIMIT.HIGH, 0x80)
-        adc.initialize_limit(c, ADC_LIMIT.LOW, 0)
+    print "Channels to measure:", channels_to_measure
 
-    #Start the ADC
-    adc.start()
+    adc.initialize(ADC_MODE.MODE_1, ADC_VREF.EXT, ADC_RATE.CONTINUOUS, channels_to_measure, 0)
+
     #Here is where channels would be calibrated
     #call adc.calibrate(channel) for each channel that has an initial input
     #voltage of 0, e.g the motors are initially off so their current
     #consumption is 0 while the PI wil already be drawing current and therefore
     #cant be calibrated to account fo a zero input response
-    adc.calibrate(0)
-    adc.calibrate(1)
-    adc.calibrate(3)
-    adc.calibrate(4)
-    adc.calibrate(5)
-    adc.calibrate(6)
-    adc.calibrate(7)
+    for ch in channels_to_measure:
+        if (CHANNEL_SENSOR_MAP[ch] == SENSOR_TYPE.HALL) or
+           (CHANNEL_SENSOR_MAP[ch] == SENSOR_TYPE.SHUNT):
+            adc.calibrate(ch)
     ##########################
     currentServer = Measure(adc)#instanciating the class object
     currentServer.open_session()
