@@ -25,8 +25,9 @@ class SENSOR_TYPE:
 MODE_SELECT = PROGRAM_MODE.PI
 PWR_PORT = 35760
 PACKET_END = '\r\r\n\n'
-VDD = 5.0 #actual voltage on a 5V pin powering the measurement module as float
+VDD = 5.2 #actual voltage on a 5V pin powering the measurement module as float
 CALIBRATION_SAMPLES = 100
+VERBOS_AVERAGE_WINDOW = 100
 
 #LOG_BUFF_COUNT = number of readings before saving to file
 if MODE_SELECT == PROGRAM_MODE.PI:
@@ -48,8 +49,8 @@ CHANNEL_SENSOR_MAP = [
         SENSOR_TYPE.HALL, 
         SENSOR_TYPE.DISABLE, 
         SENSOR_TYPE.DISABLE, 
-        SENSOR_TYPE.VOLTAGE, 
         SENSOR_TYPE.DISABLE, 
+        SENSOR_TYPE.VOLTAGE, 
         SENSOR_TYPE.HALL, 
         SENSOR_TYPE.HALL            #channel 7
         ]

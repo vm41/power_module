@@ -168,7 +168,7 @@ class Measure(object):
                 raw_reading = self.adc.read_channel(channel)
 
                 #convert the readings if required
-                sensorStep = Conversion()
+                sensorStep = Conversion()# this line should not be called multiple times, move it up
                 channel_data = sensorStep.convert(CHANNEL_SENSOR_MAP[channel], raw_reading)
 
                 ################
@@ -225,11 +225,11 @@ if __name__ == '__main__':
     #consumption is 0 while the PI wil already be drawing current and therefore
     #cant be calibrated to account fo a zero input response
     for ch in channels_to_measure:
-        if (CHANNEL_SENSOR_MAP[ch] == SENSOR_TYPE.HALL) or
-           (CHANNEL_SENSOR_MAP[ch] == SENSOR_TYPE.SHUNT):
+        if ((CHANNEL_SENSOR_MAP[ch] == SENSOR_TYPE.HALL) or
+           (CHANNEL_SENSOR_MAP[ch] == SENSOR_TYPE.SHUNT)):
             adc.calibrate(ch)
     ##########################
-    currentServer = Measure(adc)#instanciating the class object
+    currentServer = Measure(adc)#creating instance of the class object
     currentServer.open_session()
     currentServer.dump("--------------------------------------")
     currentServer.dump("STARTED PROGRAM")
