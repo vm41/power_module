@@ -44,7 +44,7 @@ class Measure(object):
 
 
 
-    def __init__(self, adc):#one can pass i2c address here
+    def __init__(self, adc, channels_to_measure):#one can pass i2c address here
         '''
         Initilisation goes here
         '''
@@ -71,6 +71,7 @@ class Measure(object):
         self.HOST                      = "127.0.0.1"
         self.i2c                       = None
         self.adc                       = adc
+        self.CHANNEL_TO_MEASURE        = channels_to_measure
         if not os.path.exists(LOG_DIR):
             os.makedirs(LOG_DIR)
         # new addition
@@ -118,7 +119,7 @@ class Measure(object):
         start_time=time.time()
         last_time=start_time
         myFile_name = LOG_DIR+"/"+self.SESSION_DIR+"/log_"+time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime(start_time))+"_power.log"# creating new file under current session directory
-        self.dump("openning file: %s"%(myFile_name))
+        self.dump("opening file: %s"%(myFile_name))
         myFile=open(myFile_name,"a")
         myFile.write("#start time: %13.3f\t"%(start_time))
         myFile.write("\n")
@@ -128,9 +129,6 @@ class Measure(object):
         myBuffer=[]
         avg=[0.0]*self.adc.NUMBER_OF_CHANNELS
         while True:
-            channel=channel+1
-            if (channel>=self.adc.NUMBER_OF_CHANNELS):
-                channel=0
             try:
                 now=time.time()
                 if (channel==0):
@@ -162,6 +160,10 @@ class Measure(object):
                         break
 
                 if CHANNEL_SENSOR_MAP[channel] == SENSOR_TYPE.DISABLE:
+                    channel=channel+1
+                    if (channel>=self.adc.NUMBER_OF_CHANNELS):
+                        channel=0
+                    count+=1
                     continue
 
                 # new line, reading adc channel value
@@ -175,17 +177,20 @@ class Measure(object):
                 myLine="%14.3f"%(now)+"\t"+str(EVENT_TYPE.MEASUREMENT)+"\t"+"%d"%(channel)+"\t"+"%6.2f"%(channel_data)
                 myBuffer.append(myLine)
                 
-                if (MODE_SELECT == PROGRAM_MODE.PC):
+                if MODE_SELECT == PROGRAM_MODE.PC or MODE_SELECT ==  PROGRAM_MODE.PI:
                     avg[channel]+=channel_data
-
-                    if (VERBOS_AVERAGE_WINDOW > 0 and count % (self.adc.NUMBER_OF_CHANNELS * VERBOS_AVERAGE_WINDOW) == 0):
-                        myStr = "\n--- Average over last " + str(VERBOS_AVERAGE_WINDOW) + " measurements ---\n"
-                        for i in range(0, self.adc.NUMBER_OF_CHANNELS):
-                            myStr += "channel " + str(i) + " " + str(avg[i] / VERBOS_AVERAGE_WINDOW) + "\n"
-                        self.dump(myStr)
-                        avg = [0.0] * self.adc.NUMBER_OF_CHANNELS
-
+                channel = channel+1
+                if (channel >= self.adc.NUMBER_OF_CHANNELS):
+                    channel = 0
                 count+=1
+                # print avg
+                if (VERBOS_AVERAGE_WINDOW > 0 and count % (self.adc.NUMBER_OF_CHANNELS * VERBOS_AVERAGE_WINDOW) == 0):
+                    myStr = "\n--- Average over last " + str(VERBOS_AVERAGE_WINDOW) + " measurements ---\n"
+                    for i in range(0, self.adc.NUMBER_OF_CHANNELS):
+                        myStr += "channel " + str(i) + " " + str(avg[i] / VERBOS_AVERAGE_WINDOW) + "\n"
+                    self.dump(myStr)
+                    avg = [0.0] * self.adc.NUMBER_OF_CHANNELS
+
                 if (count>=LOG_BUFF_COUNT):
                     finish_time=now
                     myLine = "%14.3f: logged %d measurements. duration: %8.3f seconds"%(now,count,finish_time-last_time)
@@ -229,7 +234,7 @@ if __name__ == '__main__':
            (CHANNEL_SENSOR_MAP[ch] == SENSOR_TYPE.SHUNT)):
             adc.calibrate(ch)
     ##########################
-    currentServer = Measure(adc)#creating instance of the class object
+    currentServer = Measure(adc, channels_to_measure)#creating instance of the class object
     currentServer.open_session()
     currentServer.dump("--------------------------------------")
     currentServer.dump("STARTED PROGRAM")

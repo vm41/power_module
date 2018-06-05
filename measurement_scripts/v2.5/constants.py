@@ -22,7 +22,7 @@ class SENSOR_TYPE:
     HALL = 2
     SHUNT = 3
 
-MODE_SELECT = PROGRAM_MODE.PI
+MODE_SELECT = PROGRAM_MODE.PI#selected mode
 PWR_PORT = 35760
 PACKET_END = '\r\r\n\n'
 VDD = 5.2 #actual voltage on a 5V pin powering the measurement module as float
