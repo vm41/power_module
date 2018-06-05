@@ -1,6 +1,7 @@
 from constants import *
 
 class Conversion:
+	@classmethod
     def convert(self, sensor_type, data_raw):
         result = data_raw
         if(sensor_type == SENSOR_TYPE.HALL): # for hall effect sensor

@@ -185,8 +185,6 @@ class ADC128D818:
 		real_reading = i2c_utilities.reverse_endian(reading) >> 4 #flip byte order and trim extra 0's
 		converted_reading = (real_reading * self.Vref) / 4095
                 unbiased_reading = converted_reading - self.channel_bias[channel]
-		if(unbiased_reading < 0): #No negative values
-			unbiased_reading = 0
 		return unbiased_reading
 
 	def read_channel_uncalibrated(self, channel):
