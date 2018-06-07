@@ -9,7 +9,9 @@ from threading import Thread
 from ADC128D818 import *
 # importing the Transformation file
 from Conversion import *
-
+#######Customize##########
+DEVICE_ADDRESS = ADC_ADDRESS.MID_MID
+##########################
 #Mode selection
 if MODE_SELECT == PROGRAM_MODE.PI:
     import smbus
@@ -21,6 +23,7 @@ if MODE_SELECT == PROGRAM_MODE.PC:
     i2c = FT232H.I2CDevice(ft232h, DEVICE_ADDRESS) # Create an I2C device at address.
 #Mode selection
 #if MODE_SELECT == PROGRAM_MODE.PC_SIMULATE_DATA:
+adc = ADC128D818(i2c, DEVICE_ADDRESS)
 
 class Measure(object):
     """Encapsulates all the necessary functions and attributes required for logging the current measurement:
@@ -43,7 +46,7 @@ class Measure(object):
 
 
 
-    def __init__(self, adc, channels_to_measure):#one can pass i2c address here
+    def __init__(self, channels_to_measure):#one can pass i2c address here
         '''
         Initilisation goes here
         '''
@@ -83,7 +86,8 @@ class Measure(object):
         time.sleep(0.1)
         self.dump("Start of logging thread")
         channel=0
-        count=0
+        avg_count = 0
+	reading_count = 0
         start_time=0
         finish_time=0
         start_time=time.time()
@@ -122,7 +126,7 @@ class Measure(object):
 
                     if (self.FINISH_LOGGING):
                         finish_time=now
-                        myLine = "%14.3f: logged %d measurements. duration: %8.3f seconds. finishing up this log"%(now,count,finish_time-last_time)
+                        myLine = "%14.3f: logged %d measurements. duration: %8.3f seconds. finishing up this log"%(now,avg_count,finish_time-last_time)
                         self.dump(myLine)
                         for item in myBuffer:
                             myFile.write("%s\n" % item)
@@ -146,18 +150,15 @@ class Measure(object):
                 myLine="%14.3f"%(now)+"\t"+str(EVENT_TYPE.MEASUREMENT)+"\t"+"%d"%(channel)+"\t"+"%6.2f"%(channel_data)
                 myBuffer.append(myLine)                
 
-                channel = channel+1
-                if (channel >= self.adc.NUMBER_OF_CHANNELS):
-                    channel = 0
-
                 if (DEBUG_MODE):
                     avg[channel]+=channel_data
                     avg_count+=1
-                    # print avg
-                    if (avg_count % len(CHANNEL_TO_MEASURE)*VERBOS_AVERAGE_WINDOW == 0):
+                   # print avg
+		    #print avg_count 
+                    if (avg_count % (len(self.CHANNEL_TO_MEASURE)*VERBOS_AVERAGE_WINDOW) == 0):
                         myStr = "\n--- Average over last " + str(VERBOS_AVERAGE_WINDOW) + " measurements ---\n"
                         for i in range(0, self.adc.NUMBER_OF_CHANNELS):
-                            if (i in CHANNEL_TO_MEASURE):
+                            if (i in self.CHANNEL_TO_MEASURE):
                                 myStr += "channel " + str(i) + " " + str(avg[i] / VERBOS_AVERAGE_WINDOW) + "\n"
                         self.dump(myStr)
                         avg = [0.0] * self.adc.NUMBER_OF_CHANNELS
@@ -165,7 +166,7 @@ class Measure(object):
 
                 if (reading_count >= LOG_BUFF_COUNT):
                     finish_time=now
-                    myLine = "%14.3f: logged %d measurements. duration: %8.3f seconds"%(now,count,finish_time-last_time)
+                    myLine = "%14.3f: logged %d measurements. duration: %8.3f seconds"%(now,reading_count,finish_time-last_time)
                     self.dump(myLine)
                     for item in myBuffer:
                         myFile.write("%s\n" % item)
@@ -173,6 +174,10 @@ class Measure(object):
                     myBuffer=[]
                     last_time=finish_time
                     reading_count=0
+
+		channel = channel+1
+                if (channel >= self.adc.NUMBER_OF_CHANNELS):
+                    channel = 0
 
             except Exception as e:
                 self.dump("ERROR: some error in logging process, passing this loop: "+str(e))
@@ -184,7 +189,7 @@ class Measure(object):
 if __name__ == '__main__':
     #create the ADC object
     # CUSTOMIZE
-    adc = ADC128D818(i2c, DEVICE_ADDRESS)
+#    adc = ADC128D818(i2c, DEVICE_ADDRESS)
 
     #intialize the ADC to 8 single ended inputs, external VREF, continuous  #sampling and no masked channels or interrupts
     #sampling and no masked channels or interrupts
@@ -210,7 +215,7 @@ if __name__ == '__main__':
     # CUSTOMIZE
     # force calibrate any channel if needed
     ##########################
-    sensorLogger = Measure(adc, channels_to_measure)#creating instance of the class object
+    sensorLogger = Measure(channels_to_measure)#creating instance of the class object
     sensorLogger.open_session()
     sensorLogger.dump("--------------------------------------")
     sensorLogger.dump("STARTED PROGRAM")

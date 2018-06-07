@@ -1,5 +1,5 @@
-import ADC128D818
-
+#import ADC128D818
+#from ADC128D818 import *
 class PWR_Command:
 	PWR_START = 0
 	PWR_STOP = 1
@@ -14,9 +14,9 @@ class EVENT_TYPE:
 	INFO = 4
 
 class PROGRAM_MODE:
-    PI = 0
-    PC = 1
-    PC_SIMULATE_DATA = 2
+        PI = 0
+    	PC = 1
+    	PC_SIMULATE_DATA = 2
 
 class SENSOR_TYPE:
     DISABLE = 0
@@ -27,9 +27,9 @@ class SENSOR_TYPE:
 # CUSTOMIZE
 MODE_SELECT = PROGRAM_MODE.PI#selected mode
 VDD = 5.2 #actual voltage on a 5V pin powering the measurement module as float
-DEBUG_MODE = false
+DEBUG_MODE = True
 VERBOS_AVERAGE_WINDOW = 100
-DEVICE_ADDRESS=ADC128D818.ADC_ADDRESS.MID_MID
+#DEVICE_ADDRESS=ADC_ADDRESS.MID_MID
 
 PWR_HOST = "127.0.0.1"
 PWR_PORT = 35760
@@ -57,12 +57,12 @@ LOG_HEADER = "#time		#event_type	#event_data(channel&current(A), MarkNumber, ...
 # you may want to calibrate those channels only, that have a biased reading
 # CUSTOMIZE
 CHANNEL_SENSOR_MAP = [
-        (SENSOR_TYPE.HALL, true),           #channel 0
-        (SENSOR_TYPE.HALL, true), 
-        (SENSOR_TYPE.DISABLE, false), 
-        (SENSOR_TYPE.DISABLE, false), 
-        (SENSOR_TYPE.DISABLE, false), 
-        (SENSOR_TYPE.VOLTAGE, false), 
-        (SENSOR_TYPE.HALL, true), 
-        (SENSOR_TYPE.HALL, true),            #channel 7
+        (SENSOR_TYPE.HALL, True),           #channel 0
+        (SENSOR_TYPE.HALL, True), 
+        (SENSOR_TYPE.DISABLE, False), 
+        (SENSOR_TYPE.DISABLE, False), 
+        (SENSOR_TYPE.DISABLE, False), 
+        (SENSOR_TYPE.VOLTAGE, False), 
+        (SENSOR_TYPE.HALL, True), 
+        (SENSOR_TYPE.HALL, True),            #channel 7
         ]
