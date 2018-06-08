@@ -204,7 +204,13 @@ class ADC128D818:
 			sum += self.read_channel_uncalibrated(channel)
 		self.channel_bias[channel] = (sum / constants.CALIBRATION_SAMPLES)
                 print "calibrated channel %d : %f "%(channel, self.channel_bias[channel])
-	
+
+        # reset the calibration for certain occasions.	
+	def uncalibrate(self, channel):
+                self.channel_bias[channel] = 0.0
+                print "channel %d uncalibrated to 0.0"%(channel)
+
+
 	#Turning on the ADC and its interrupt function
 	def start(self):
 		data = Configuration_Register.Start | Configuration_Register.INT_Enable

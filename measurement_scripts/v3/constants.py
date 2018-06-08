@@ -42,7 +42,7 @@ if MODE_SELECT == PROGRAM_MODE.PI:
 if MODE_SELECT == PROGRAM_MODE.PC:
 	LOG_BUFF_COUNT = 1000
 if MODE_SELECT == PROGRAM_MODE.PC_SIMULATE_DATA:
-	LOG_BUFF_COUNT = 100
+	LOG_BUFF_COUNT = 4000
 
 LOG_DIR = "current"
 
@@ -64,5 +64,9 @@ CHANNEL_SENSOR_MAP = [
         (SENSOR_TYPE.DISABLE, False), 
         (SENSOR_TYPE.VOLTAGE, False), 
         (SENSOR_TYPE.HALL, True), 
-        (SENSOR_TYPE.HALL, True),            #channel 7
+        (SENSOR_TYPE.HALL, True),
+        (SENSOR_TYPE.DISABLE, False), 
+        (SENSOR_TYPE.DISABLE, False), 
+        (SENSOR_TYPE.DISABLE, False), 
+        (SENSOR_TYPE.DISABLE, False), 
         ]

@@ -21,9 +21,8 @@ if MODE_SELECT == PROGRAM_MODE.PC:
     FT232H.use_FT232H() # Temporarily disable FTDI serial drivers.
     ft232h = FT232H.FT232H() #Find the first FT232H device.
     i2c = FT232H.I2CDevice(ft232h, DEVICE_ADDRESS) # Create an I2C device at address.
-#Mode selection
-#if MODE_SELECT == PROGRAM_MODE.PC_SIMULATE_DATA:
-adc = ADC128D818(i2c, DEVICE_ADDRESS)
+if MODE_SELECT == PROGRAM_MODE.PC_SIMULATE_DATA:
+    i2c = 0 #can't be undefined
 
 class Measure(object):
     """Encapsulates all the necessary functions and attributes required for logging the current measurement:
@@ -189,7 +188,7 @@ class Measure(object):
 if __name__ == '__main__':
     #create the ADC object
     # CUSTOMIZE
-#    adc = ADC128D818(i2c, DEVICE_ADDRESS)
+    adc = ADC128D818(i2c, DEVICE_ADDRESS)
 
     #intialize the ADC to 8 single ended inputs, external VREF, continuous  #sampling and no masked channels or interrupts
     #sampling and no masked channels or interrupts
