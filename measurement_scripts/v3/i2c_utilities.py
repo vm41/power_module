@@ -1,5 +1,6 @@
 from constants import *
 import time
+import random
 #Converts data between big and little endian e.g.  0xAaBb => 0xBbAa
 def reverse_endian(value):
 	return (value % 256) * 256 + (value / 256)
@@ -21,7 +22,7 @@ def read(i2c_bus, address, register, num_bytes):
 			data = i2c_bus.readU8(register)
 		if MODE_SELECT == PROGRAM_MODE.PC_SIMULATE_DATA:
 			time.sleep(0.001) #delay to simulate read time
-			data = random.uniform(0, 256)
+			data = int(random.uniform(0, 256))
 			data = reverse_endian(data)
 		
 	elif num_bytes == 2:
@@ -31,7 +32,7 @@ def read(i2c_bus, address, register, num_bytes):
 			data = i2c_bus.readU16(register)
 		if MODE_SELECT == PROGRAM_MODE.PC_SIMULATE_DATA:
 			time.sleep(0.001) #delay to simulate read time
-			data = random.uniform(0, 4095) #check this
+			data = int(random.uniform(0, 4095)) #check this
 			data = reverse_endian(data)
 	return data
 

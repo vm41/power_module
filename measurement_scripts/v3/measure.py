@@ -9,7 +9,7 @@ from threading import Thread
 from ADC128D818 import *
 # importing the Transformation file
 from Conversion import *
-#######Customize##########
+####### CUSTOMIZE ##########
 DEVICE_ADDRESS = ADC_ADDRESS.MID_MID
 ##########################
 #Mode selection
@@ -212,7 +212,7 @@ if __name__ == '__main__':
             adc.calibrate(ch)
     
     # CUSTOMIZE
-    # force calibrate any channel if needed
+    # uncalibrate any channel if needed
     ##########################
     sensorLogger = Measure(channels_to_measure)#creating instance of the class object
     sensorLogger.open_session()
