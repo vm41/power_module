@@ -10,7 +10,7 @@ from ADC128D818 import *
 # importing the Transformation file
 from Conversion import *
 ####### CUSTOMIZE ##########
-DEVICE_ADDRESS = ADC_ADDRESS.MID_MID
+DEVICE_ADDRESS = ADC_ADDRESS.LOW_LOW
 ##########################
 #Mode selection
 if MODE_SELECT == PROGRAM_MODE.PI:
@@ -76,7 +76,8 @@ class Measure(object):
 
     # ###########################################################################################
     def dump(self, myStr):
-        newStr = time.strftime("%Y_%m_%d_%H_%M_%S \t", time.localtime(time.time()))+myStr
+        now = time.time()
+        newStr = time.strftime("%Y_%m_%d_%H_%M_%S \t", time.localtime(now))+now+"\t"+myStr
         print newStr
         sys.stdout.flush()
         self.DUMP_FILE.write(newStr+"\n")
@@ -167,9 +168,11 @@ class Measure(object):
                     finish_time=now
                     myLine = "%14.3f: logged %d measurements. duration: %8.3f seconds"%(now,reading_count,finish_time-last_time)
                     self.dump(myLine)
+                    start_write=time.time()
                     for item in myBuffer:
                         myFile.write("%s\n" % item)
                     myFile.flush()
+                    self.dump("flushing took " + time.time() - start_write + " seconds")
                     myBuffer=[]
                     last_time=finish_time
                     reading_count=0
@@ -213,6 +216,7 @@ if __name__ == '__main__':
     
     # CUSTOMIZE
     # uncalibrate any channel if needed
+    adc.uncalibrate(4) #this channel should be uncalibrated to read battery
     ##########################
     sensorLogger = Measure(channels_to_measure)#creating instance of the class object
     sensorLogger.open_session()
@@ -258,9 +262,9 @@ if __name__ == '__main__':
                     sensorLogger.LOG_INFO = False
                     sensorLogger.INFO_STRING = ""
                     sensorLogger.IS_LOGGING=True
+                    sensorLogger.dump("Logging thread starting from main thread")
                     myThread=Thread(target=sensorLogger.logging)
                     myThread.start()
-                    sensorLogger.dump("Logging thread started from main thread")
                     continue
 
                 if int(command[0].encode("hex"),16)==PWR_Command.PWR_STOP and sensorLogger.IS_LOGGING==True:
@@ -272,22 +276,28 @@ if __name__ == '__main__':
 
                 if int(command[0].encode("hex"),16)==PWR_Command.PWR_EVENT and sensorLogger.IS_LOGGING==True:
                     sensorLogger.dump("client wants to record an event")
+                    start_wait = time.time()
                     while(sensorLogger.LOG_EVENT):
                         pass
+                    sensorLogger.dump("waited for "+time.time() - start_wait + "seconds")
                     sensorLogger.LOG_EVENT=True
 
                 if int(command[0].encode("hex"),16)==PWR_Command.PWR_MARK and sensorLogger.IS_LOGGING==True:
                     sensorLogger.dump("client wants to make a numbered mark")
+                    start_wait = time.time()
                     while(sensorLogger.LOG_MARK):
                         pass
+                    sensorLogger.dump("waited for "+time.time() - start_wait + "seconds")
                     sensorLogger.MARK_VALUE=int(command[1:].encode("hex"), 16)
                     sensorLogger.dump("Mark is: %d"%(sensorLogger.MARK_VALUE))
                     sensorLogger.LOG_MARK=True
 
                 if int(command[0].encode("hex"),16)==PWR_Command.PWR_INFO and sensorLogger.IS_LOGGING==True:
                     sensorLogger.dump("client has some info to log")
+                    start_wait = time.time()
                     while(sensorLogger.LOG_INFO):
                         pass
+                    sensorLogger.dump("waited for "+time.time() - start_wait + "seconds")
                     sensorLogger.INFO_STRING=command[1:].decode('utf-8')
                     sensorLogger.dump("Info is: %s"%(sensorLogger.INFO_STRING))
                     sensorLogger.LOG_INFO=True

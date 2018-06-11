@@ -26,9 +26,9 @@ class SENSOR_TYPE:
 
 # CUSTOMIZE
 MODE_SELECT = PROGRAM_MODE.PI#selected mode
-VDD = 5.2 #actual voltage on a 5V pin powering the measurement module as float
-DEBUG_MODE = True
-VERBOS_AVERAGE_WINDOW = 100
+VDD = 4.85 #actual voltage on a 5V pin powering the measurement module as float
+DEBUG_MODE = False
+VERBOS_AVERAGE_WINDOW = 1000
 #DEVICE_ADDRESS=ADC_ADDRESS.MID_MID
 
 PWR_HOST = "127.0.0.1"
@@ -59,12 +59,12 @@ LOG_HEADER = "#time		#event_type	#event_data(channel&current(A), MarkNumber, ...
 CHANNEL_SENSOR_MAP = [
         (SENSOR_TYPE.HALL, True),           #channel 0
         (SENSOR_TYPE.HALL, True), 
-        (SENSOR_TYPE.DISABLE, False), 
-        (SENSOR_TYPE.DISABLE, False), 
-        (SENSOR_TYPE.DISABLE, False), 
-        (SENSOR_TYPE.VOLTAGE, False), 
         (SENSOR_TYPE.HALL, True), 
-        (SENSOR_TYPE.HALL, True),
+        (SENSOR_TYPE.HALL, True), 
+        (SENSOR_TYPE.VOLTAGE, True),        #this is enabled to be stored at calibration, later should be uncalibrated.
+        (SENSOR_TYPE.DISABLE, False), 
+        (SENSOR_TYPE.DISABLE, False), 
+        (SENSOR_TYPE.DISABLE, False), 
         (SENSOR_TYPE.DISABLE, False), 
         (SENSOR_TYPE.DISABLE, False), 
         (SENSOR_TYPE.DISABLE, False), 

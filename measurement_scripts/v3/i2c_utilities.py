@@ -36,15 +36,3 @@ def read(i2c_bus, address, register, num_bytes):
 			data = reverse_endian(data)
 	return data
 
-#Don't think we'll need this anymore
-#def i2c_wait_to_read():
-#	if MODE_SELECT==PROGRAM_MODE.PI:
-#		time.sleep(0.010)
-#		while (i2c_read(I2C_REG_CONF)<32768):
-#			pass
-#	if MODE_SELECT==PROGRAM_MODE.PC:
-#		time.sleep(0.010)
-#		while (i2c_read(I2C_REG_CONF)<32768):
-#			pass
-#	if MODE_SELECT==PROGRAM_MODE.PC_SIMULATE_DATA:
-#		pass
