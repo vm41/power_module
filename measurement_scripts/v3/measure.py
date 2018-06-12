@@ -3,8 +3,9 @@ import sys
 import os
 import time
 import random
+import threading
 from socket import *
-from threading import Thread
+
 # importing the ADC class file
 from ADC128D818 import *
 # importing the Transformation file
@@ -23,6 +24,8 @@ if MODE_SELECT == PROGRAM_MODE.PC:
     i2c = FT232H.I2CDevice(ft232h, DEVICE_ADDRESS) # Create an I2C device at address.
 if MODE_SELECT == PROGRAM_MODE.PC_SIMULATE_DATA:
     i2c = 0 #can't be undefined
+
+dumpLock = threading.Lock()
 
 class Measure(object):
     """Encapsulates all the necessary functions and attributes required for logging the current measurement:
@@ -76,11 +79,14 @@ class Measure(object):
 
     # ###########################################################################################
     def dump(self, myStr):
+        dumpLock.acquire()
         now = time.time()
-        newStr = time.strftime("%Y_%m_%d_%H_%M_%S \t", time.localtime(now))+str(now)+"\t"+myStr
+        newStr = time.strftime("%Y_%m_%d_%H_%M_%S \t",
+                time.localtime(now))+str(now)+"\t"+myStr
         print newStr
-        sys.stdout.flush()
         self.DUMP_FILE.write(newStr+"\n")
+        sys.stdout.flush()
+        dumpLock.release()
     ###########################################################################################
     def logging(self):
         time.sleep(0.1)
@@ -93,7 +99,7 @@ class Measure(object):
         start_time=time.time()
         last_time=start_time
         myFile_name = LOG_DIR+"/"+self.SESSION_DIR+"/log_"+time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime(start_time))+"_power.log"# creating new file under current session directory
-        self.dump("opening file: %s"%(myFile_name))
+        self.dump("Opening file: %s"%(myFile_name))
         myFile=open(myFile_name,"a")
         myFile.write("#start time: %13.3f\t"%(start_time))
         myFile.write("\n")
@@ -106,31 +112,33 @@ class Measure(object):
             try:
                 now=time.time()
                 if (channel==0):
+                    time.sleep(0)
                     if (self.LOG_EVENT):
-                        self.LOG_EVENT=False
                         myLine="%14.3f\t%d"%(now,EVENT_TYPE.EVENT)
                         myBuffer.append(myLine)
+                        self.LOG_EVENT=False
                         continue
 
                     if (self.LOG_MARK):
-                        self.LOG_MARK=False
                         myLine="%14.3f\t%d\t%d"%(now,EVENT_TYPE.MARK,self.MARK_VALUE)
                         myBuffer.append(myLine)
+                        self.LOG_MARK=False
                         continue
 
                     if (self.LOG_INFO):
-                        self.LOG_INFO=False
                         myLine="%14.3f\t%d\t%s"%(now,EVENT_TYPE.INFO,self.INFO_STRING)
                         myBuffer.append(myLine)
+                        self.LOG_INFO=False
                         continue
 
                     if (self.FINISH_LOGGING):
                         finish_time=now
                         myLine = "%14.3f: logged %d measurements. duration: %8.3f seconds. finishing up this log"%(now,avg_count,finish_time-last_time)
                         self.dump(myLine)
-                        for item in myBuffer:
-                            myFile.write("%s\n" % item)
+                        start_write=time.time()
+                        myFile.write("\n".join(myBuffer))
                         myFile.flush()
+                        self.dump("Flushing took " + str(time.time() - now) + " seconds")
                         break
 
                 if (CHANNEL_SENSOR_MAP[channel][0] == SENSOR_TYPE.DISABLE):
@@ -153,8 +161,6 @@ class Measure(object):
                 if (DEBUG_MODE):
                     avg[channel]+=channel_data
                     avg_count+=1
-                   # print avg
-		    #print avg_count 
                     if (avg_count % (len(self.CHANNEL_TO_MEASURE)*VERBOS_AVERAGE_WINDOW) == 0):
                         myStr = "\n--- Average over last " + str(VERBOS_AVERAGE_WINDOW) + " measurements ---\n"
                         for i in range(0, self.adc.NUMBER_OF_CHANNELS):
@@ -166,13 +172,12 @@ class Measure(object):
 
                 if (reading_count >= LOG_BUFF_COUNT):
                     finish_time=now
+                    start_write=time.time()
                     myLine = "%14.3f: logged %d measurements. duration: %8.3f seconds"%(now,reading_count,finish_time-last_time)
                     self.dump(myLine)
-                    start_write=time.time()
-                    for item in myBuffer:
-                        myFile.write("%s\n" % item)
-                    myFile.flush()
-                    self.dump("flushing took " + str(time.time() - start_write) + " seconds")
+                    myFile.write("\n".join(myBuffer))
+                    #myFile.flush()
+                    self.dump("Emptying buffer took " + str(time.time() - start_write) + " seconds")
                     myBuffer=[]
                     last_time=finish_time
                     reading_count=0
@@ -186,6 +191,7 @@ class Measure(object):
                 pass
 
         self.dump("End of logging thread here.")
+        time.sleep(0)
 
 
 if __name__ == '__main__':
@@ -263,51 +269,45 @@ if __name__ == '__main__':
                     sensorLogger.INFO_STRING = ""
                     sensorLogger.IS_LOGGING=True
                     sensorLogger.dump("Logging thread starting from main thread")
-                    myThread=Thread(target=sensorLogger.logging)
+                    myThread=threading.Thread(target=sensorLogger.logging)
                     myThread.start()
                     continue
 
                 if int(command[0].encode("hex"),16)==PWR_Command.PWR_STOP and sensorLogger.IS_LOGGING==True:
-                    sensorLogger.dump("client wants to finish logging")
+                    sensorLogger.dump("Client wants to finish logging")
                     sensorLogger.FINISH_LOGGING=True
                     myThread.join()
                     sensorLogger.IS_LOGGING=False
-                    sensorLogger.dump("child thread is done, this session is finished")
+                    sensorLogger.dump("Child thread is done, this session is finished")
 
                 if int(command[0].encode("hex"),16)==PWR_Command.PWR_EVENT and sensorLogger.IS_LOGGING==True:
-                    sensorLogger.dump("client wants to record an event")
-                    start_wait = time.time()
+                    sensorLogger.dump("Client wants to record an event")
                     while(sensorLogger.LOG_EVENT):
                         pass
-                    sensorLogger.dump("waited for "+str(time.time() - start_wait) + "seconds")
                     sensorLogger.LOG_EVENT=True
 
                 if int(command[0].encode("hex"),16)==PWR_Command.PWR_MARK and sensorLogger.IS_LOGGING==True:
-                    sensorLogger.dump("client wants to make a numbered mark")
-                    start_wait = time.time()
+                    sensorLogger.dump("Client wants to make a numbered mark")
                     while(sensorLogger.LOG_MARK):
                         pass
-                    sensorLogger.dump("waited for "+str(time.time() - start_wait) + "seconds")
                     sensorLogger.MARK_VALUE=int(command[1:].encode("hex"), 16)
                     sensorLogger.dump("Mark is: %d"%(sensorLogger.MARK_VALUE))
                     sensorLogger.LOG_MARK=True
 
                 if int(command[0].encode("hex"),16)==PWR_Command.PWR_INFO and sensorLogger.IS_LOGGING==True:
-                    sensorLogger.dump("client has some info to log")
-                    start_wait = time.time()
+                    sensorLogger.dump("Client has some info to log")
                     while(sensorLogger.LOG_INFO):
                         pass
-                    sensorLogger.dump("waited for "+str(time.time() - start_wait) + "seconds")
                     sensorLogger.INFO_STRING=command[1:].decode('utf-8')
                     sensorLogger.dump("Info is: %s"%(sensorLogger.INFO_STRING))
                     sensorLogger.LOG_INFO=True
 
         except KeyboardInterrupt:
-            sensorLogger.dump("interrupted by user, waiting for logging to finish")
+            sensorLogger.dump("\nInterrupted by user, waiting for logging to finish.")
             if sensorLogger.IS_LOGGING==True:
                 sensorLogger.FINISH_LOGGING=True
                 myThread.join()
-                sensorLogger.dump("child thread done")
-            sensorLogger.dump("now exiting program")
+                sensorLogger.dump("Child thread done")
+            sensorLogger.dump("Now exiting program")
             time.sleep(1.0)
             exit()
