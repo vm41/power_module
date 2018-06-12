@@ -82,7 +82,7 @@ class Measure(object):
         dumpLock.acquire()
         now = time.time()
         newStr = time.strftime("%Y_%m_%d_%H_%M_%S \t",
-                time.localtime(now))+str(now)+"\t"+myStr
+                time.localtime(now))+"%14.3f"%now+"\t"+myStr
         print newStr
         self.DUMP_FILE.write(newStr+"\n")
         sys.stdout.flush()
