@@ -77,7 +77,7 @@ class Measure(object):
     # ###########################################################################################
     def dump(self, myStr):
         now = time.time()
-        newStr = time.strftime("%Y_%m_%d_%H_%M_%S \t", time.localtime(now))+now+"\t"+myStr
+        newStr = time.strftime("%Y_%m_%d_%H_%M_%S \t", time.localtime(now))+str(now)+"\t"+myStr
         print newStr
         sys.stdout.flush()
         self.DUMP_FILE.write(newStr+"\n")
@@ -172,7 +172,7 @@ class Measure(object):
                     for item in myBuffer:
                         myFile.write("%s\n" % item)
                     myFile.flush()
-                    self.dump("flushing took " + time.time() - start_write + " seconds")
+                    self.dump("flushing took " + str(time.time() - start_write) + " seconds")
                     myBuffer=[]
                     last_time=finish_time
                     reading_count=0
@@ -279,7 +279,7 @@ if __name__ == '__main__':
                     start_wait = time.time()
                     while(sensorLogger.LOG_EVENT):
                         pass
-                    sensorLogger.dump("waited for "+time.time() - start_wait + "seconds")
+                    sensorLogger.dump("waited for "+str(time.time() - start_wait) + "seconds")
                     sensorLogger.LOG_EVENT=True
 
                 if int(command[0].encode("hex"),16)==PWR_Command.PWR_MARK and sensorLogger.IS_LOGGING==True:
@@ -287,7 +287,7 @@ if __name__ == '__main__':
                     start_wait = time.time()
                     while(sensorLogger.LOG_MARK):
                         pass
-                    sensorLogger.dump("waited for "+time.time() - start_wait + "seconds")
+                    sensorLogger.dump("waited for "+str(time.time() - start_wait) + "seconds")
                     sensorLogger.MARK_VALUE=int(command[1:].encode("hex"), 16)
                     sensorLogger.dump("Mark is: %d"%(sensorLogger.MARK_VALUE))
                     sensorLogger.LOG_MARK=True
@@ -297,7 +297,7 @@ if __name__ == '__main__':
                     start_wait = time.time()
                     while(sensorLogger.LOG_INFO):
                         pass
-                    sensorLogger.dump("waited for "+time.time() - start_wait + "seconds")
+                    sensorLogger.dump("waited for "+str(time.time() - start_wait) + "seconds")
                     sensorLogger.INFO_STRING=command[1:].decode('utf-8')
                     sensorLogger.dump("Info is: %s"%(sensorLogger.INFO_STRING))
                     sensorLogger.LOG_INFO=True
