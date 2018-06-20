@@ -10,11 +10,11 @@ from constants import *
 global DUMP_FILE
 
 SMOOTHING_WINDOW=20
-
-BATTERY_VOLTAGE=15 # this ensures power = current * voltage
-NUMBER_OF_DAYS=1
-NUMBER_OF_ROUNDS=20
-NUMBER_OF_SETUPS=1
+NUMBER_OF_CHANNELS=5
+BATTERY_VOLTAGE=23 # this ensures power = current * voltage
+NUMBER_OF_DAYS=3
+NUMBER_OF_ROUNDS=3
+NUMBER_OF_SETUPS=4
 SPEED_SETUPS = [5.0, 5.0, 7.0, 10.0]    #       <- ATTENTION
 ANGLE_SETUPS = [0, 45, 90, 135, 180]
 ANGLE_CONSTANT_SPEED=5.0
@@ -25,7 +25,7 @@ SAVE_GRAPH_TOTAL = False        #total current vs. time
 SAVE_GRAPH_VELOCITY = False
 SAVE_GRAPH_ENERGY = False
 SAVE_GRAPH_PATH = False  # for stadium experiments to create a graph for paths
-SAVE_GRAPH_SETUP_BASED = False
+SAVE_GRAPH_SETUP_BASED = True
 SAVE_GRAPH_ROUND_BASED = False
 APPLY_GRAPH_CUSTOMIZATION = True #yticks, ylimit range, etc.
 STR_GRAPHS='current_graphs'
@@ -128,16 +128,12 @@ def AvgING(watts, r):
         avg = watts[x]
         count = 1
         for i in range(1,r):
-            try:
+            if (x-i >= 0):
                 avg += watts[x-i]
                 count += 1
-            except:
-                pass
-            try:
+            if (x+i < len(watts)):
                 avg += watts[x+i]
                 count += 1
-            except:
-                pass
         avg = avg/count
         Avg+=[avg]
 
@@ -200,6 +196,13 @@ file_names = []
 
 trials=0
 
+channels_to_measure = []
+for ch in range(len(CHANNEL_SENSOR_MAP)):
+    if (CHANNEL_SENSOR_MAP[ch][0] == SENSOR_TYPE.HALL):
+        channels_to_measure.append(ch)
+
+print "Channels to measure:", channels_to_measure
+
 for f in fileList:
     if (f.endswith('.log') and f.startswith('log')):
         myFile=f
@@ -240,7 +243,7 @@ for f in fileList:
                 l=fv.readline()
                 if (l.startswith('#')):
                     continue
-                if l=='':
+                if not l: 
                     break
                 l=l.strip().split()
                 now=float(l[0])  
@@ -257,9 +260,9 @@ for f in fileList:
                 if event_type==EVENT_TYPE.MEASUREMENT:
                     channel=int(l[2])
                     curr=float(l[3])
-		    if(channel==2 or channel==3 or channel==4 or channel==5):
-			#print(i)
+		    if(channel not in channels_to_measure):
 			continue
+
                     reading_time[trials][channel].append(time)
                     reading[trials][channel].append(curr)
                     lastValue[channel]=curr
@@ -289,7 +292,8 @@ for f in fileList:
                     dump(str(l))
 
                 dump(str(e))
-                break
+                continue
+           # break
 
         dump ("%d lines were read, %d lines counted"%(line_number, counted)) 
         dump ("within the trial#%d we found %d reading sets, %d events+markers, %d info messages"%(trials, len(reading[trials][0]),len(markers[trials]),len(info[trials])))
@@ -325,6 +329,7 @@ for this_trial in range(trials):
     this_setup=(this_trial/NUMBER_OF_ROUNDS) % NUMBER_OF_SETUPS
     this_round=this_trial%NUMBER_OF_ROUNDS
     
+    dump("------------------------")
     dump('processing trial %d: day %d setup %d round %d ...'%(this_trial, this_day, this_setup, this_round))
 
     # velocity[this_trial], position[this_trial] = extract_info(info[this_trial])
@@ -346,7 +351,6 @@ for this_trial in range(trials):
     except:
         pass
 
-    dump("------------------------")
     if (steady_duration[this_trial]>0):
         dump("\tSTEADY DURATION DETECTED:")
         dump("\tstart time -> stop time  --- steady duration -----     start position      ->     stop position       ----- steady movement --- steady distance")
@@ -359,7 +363,6 @@ for this_trial in range(trials):
             %(SPEED_SETUPS[this_setup], sum_distance_steady[this_trial]/steady_duration[this_trial], delta_energy[this_trial] / sum_distance_steady[this_trial]))
     else:
         dump("\tCOULD NOT DETECT STEADY DURATION, STEADY DATA NOT RELIABLE")
-    dump("------------------------")
 
     myFile=file_names[this_trial][4:-10]
 
@@ -370,7 +373,8 @@ for this_trial in range(trials):
     elif (TARGET_SETUP=="Hover"):
         # added_setup_label = 'Current log for Thrust 1500 on 3 Cells Bat 1 Power supply'
         # added_setup_label = 'Current log for Thrust 1500 on 3 Cells Bat 2 Power supply'
-        added_setup_label = 'Current log for Thrust 1500 on 4 Cells Bat Power supply'
+        # added_setup_label = 'Current log for Thrust 1500 on 4 Cells Bat Power supply'
+        added_setup_label = 'Current log for UB-ANC Hover mission'
     else:
         dump("UKNOWN TARGET SETUP: "+TARGET_SETUP)
         
@@ -378,32 +382,39 @@ for this_trial in range(trials):
 	#fig1 = plt.figure(figsize=(20, 2))
         fig1, ax1 =plt.subplots(figsize=(30, 10))
         for i in range(NUMBER_OF_CHANNELS):
-	    if(i==2 or i==3 or i==4 or i==5):
-		print(i)
+	    if(i not in channels_to_measure):
+                print "Not accounting for channel: "+str(i)
 		continue
             reading[this_trial][i]=AvgING(reading[this_trial][i],SMOOTHING_WINDOW)
+            ### CUSTOMIZE ###
 	    if(i==0):
-	    	label = 'Channel '+str(i)+' Motor 4'
-            if(i==1):
 	    	label = 'Channel '+str(i)+' Motor 1'
-            if(i==6):
+            if(i==1):
 	    	label = 'Channel '+str(i)+' Motor 2'
-            if(i==7):
+            if(i==2):
 	    	label = 'Channel '+str(i)+' Motor 3'
+            if(i==3):
+	    	label = 'Channel '+str(i)+' Motor 4'
+#           if(i==0):
+#	    	label = 'Channel '+str(i)+' Motor 4'
+#            if(i==1):
+#	    	label = 'Channel '+str(i)+' Motor 1'
+#            if(i==6):
+#	    	label = 'Channel '+str(i)+' Motor 2'
+#            if(i==7):
+#	    	label = 'Channel '+str(i)+' Motor 3'
             ax1.plot(reading_time[this_trial][i],reading[this_trial][i], label=label)
 	
 	total_curr[this_trial]=AvgING(total_curr[this_trial],SMOOTHING_WINDOW)
-	ax1.plot(micro_time[this_trial],total_curr[this_trial], 'b', label="Average current")
+	ax1.plot(micro_time[this_trial],total_curr[this_trial], 'b', label="Total current")
 
         for i in range(len(markers_time[this_trial])):
             ax1.axvline(x=markers_time[this_trial][i],color='k')      #TODO apply colors based on marker number
 
         if (APPLY_GRAPH_CUSTOMIZATION):
-            pass
-            
-        ax1.set_xlabel('Time (s)')
-        ax1.set_ylabel('Current (A)')
-        lgd = ax1.legend(loc='lower right')
+            ax1.set_xlabel('Time (s)')
+            ax1.set_ylabel('Current (A)')
+            lgd = ax1.legend(loc='lower right')
         
         #plt.title('%d Channels - %s'%(NUMBER_OF_CHANNELS,added_setup_label))# - Round = %d %s'%(NUMBER_OF_CHANNELS,this_day*NUMBER_OF_ROUNDS+this_round+1,added_setup_label))
 	plt.title('Round %d: - %s'%(this_trial+1,added_setup_label))# - Round = %d %s'%(NUMBER_OF_CHANNELS,this_day*NUMBER_OF_ROUNDS+this_round+1,added_setup_label))

@@ -176,6 +176,7 @@ class Measure(object):
                     myLine = "%14.3f: logged %d measurements. duration: %8.3f seconds"%(now,reading_count,finish_time-last_time)
                     self.dump(myLine)
                     myFile.write("\n".join(myBuffer))
+                    myFile.write("\n")
                     #myFile.flush()
                     self.dump("Emptying buffer took " + str(time.time() - start_write) + " seconds")
                     myBuffer=[]
