@@ -25,7 +25,7 @@ class SENSOR_TYPE:
     SHUNT = 3
 
 # CUSTOMIZE
-MODE_SELECT = PROGRAM_MODE.PI#selected mode
+MODE_SELECT = PROGRAM_MODE.PI #selected mode
 VDD = 4.85 #actual voltage on a 5V pin powering the measurement module as float
 DEBUG_MODE = False
 VERBOS_AVERAGE_WINDOW = 1000

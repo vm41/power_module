@@ -75,7 +75,7 @@ class Measure(object):
         self.SESSION_DIR=self.SESSION_DIR_INIT+"%03d"%(session_id)
         os.makedirs(LOG_DIR+"/"+self.SESSION_DIR)
         self.DUMP_FILE = open(LOG_DIR+"/"+self.SESSION_DIR+"/dump.log","a")
-        print self.SESSION_DIR
+        #print self.SESSION_DIR
 
     # ###########################################################################################
     def dump(self, myStr):
@@ -207,10 +207,19 @@ if __name__ == '__main__':
         if (CHANNEL_SENSOR_MAP[ch][0] != SENSOR_TYPE.DISABLE):
             channels_to_measure.append(ch)
 
-    print "Channels to measure:", channels_to_measure
+    #print "Channels to measure:", channels_to_measure
 
     # CUSTOMIZE
     adc.initialize(ADC_MODE.MODE_1, ADC_VREF.EXT, ADC_RATE.CONTINUOUS, channels_to_measure, 0)
+    ##########################
+    sensorLogger = Measure(channels_to_measure)#creating instance of the class object
+    sensorLogger.open_session()
+    sensorLogger.dump("--------------------------------------")
+    sensorLogger.dump("STARTED PROGRAM")
+    sensorLogger.dump("Writing logs to folder: %s"%(LOG_DIR+"/"+sensorLogger.SESSION_DIR))
+    sensorLogger.dump("Make sure your constant.py file is set. MODE_SELECT, VDD, and LOG_DIR are important for logging")
+    sensorLogger.dump("Currently these values are: %d, %5.3f, %s"%(MODE_SELECT, VDD, LOG_DIR))
+    sensorLogger.dump("Channels to measure: "+str(channels_to_measure))
 
     #Here is where channels would be calibrated
     #call adc.calibrate(channel) for each channel that has an initial biased reading.
@@ -220,19 +229,11 @@ if __name__ == '__main__':
     for ch in channels_to_measure:
         if (CHANNEL_SENSOR_MAP[ch][1]): #calibrate flag
             adc.calibrate(ch)
-    
+            sensorLogger.dump("Channel %d initial reading at calibration: %f"%(ch, adc.read_bias(ch)))   
     # CUSTOMIZE
     # uncalibrate any channel if needed
     adc.uncalibrate(4) #this channel should be uncalibrated to read battery
-    ##########################
-    sensorLogger = Measure(channels_to_measure)#creating instance of the class object
-    sensorLogger.open_session()
-    sensorLogger.dump("--------------------------------------")
-    sensorLogger.dump("STARTED PROGRAM")
-    sensorLogger.dump("Writing logs to folder: %s"%(LOG_DIR+"/"+sensorLogger.SESSION_DIR))
-    sensorLogger.dump("Make sure your constant.py file is set. MODE_SELECT, VDD, and LOG_DIR are important for logging")
-    sensorLogger.dump("Currently these values are: %d, %5.3f, %s"%(MODE_SELECT, VDD, LOG_DIR))
-
+    sensorLogger.dump("Channel %d uncalibrated to 0.0"%(ch))   
 
     ADDR = (PWR_HOST,PWR_PORT)
     serversock=socket(AF_INET,SOCK_STREAM)
