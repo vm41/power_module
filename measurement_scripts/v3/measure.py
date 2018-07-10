@@ -251,6 +251,12 @@ if __name__ == '__main__':
             if data=="":
                 #this would happen in case the client closes and wants to reopen.
                 sensorLogger.dump("There seems to be something wrong with the socket, accepting another socket")
+                if sensorLogger.IS_LOGGING==True:
+                    sensorLogger.dump("Force finishing previous measurement")
+                    sensorLogger.FINISH_LOGGING=True
+                    myThread.join()
+                    sensorLogger.IS_LOGGING=False
+                    sensorLogger.dump("Child thread is done, this session is finished")
                 clientsock, add = serversock.accept()
                 sensorLogger.open_session()
                 sensorLogger.dump("--------------------------------------")
