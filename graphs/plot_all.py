@@ -299,10 +299,10 @@ for f in fileList:
                     reading[trials][channel].append(value)
 
                     #updating battery voltage
-                    if (CHANNEL_SENSOR_MAP[channel][0]==SENSOR_TYPE.VOLTAGE):
+                    if (CHANNEL_SENSOR_MAP[channel][2]==SENSOR_PURPOSE.BATTERY_VOLTAGE):
                         BATTERY_VOLTAGE = value
 
-                    if (CHANNEL_SENSOR_MAP[channel][0]==SENSOR_TYPE.HALL): #total current is only for current measurements
+                    if (CHANNEL_SENSOR_MAP[channel][2]==SENSOR_PURPOSE.MOTOR_CURRENT): #total current is only for current measurements
                         lastValue[channel]=value                # only hall current seensors for motos should be summed for total
                         micro_time[trials].append(time)
                         total_curr[trials].append(sum(lastValue))
@@ -436,11 +436,9 @@ for this_trial in range(trials):
     if (SAVE_GRAPH_CHANNELS):
         fig1, ax1 = plt.subplots()
         for ch in range(NUMBER_OF_CHANNELS):
-	    if not (CHANNEL_SENSOR_MAP[ch][0]==SENSOR_TYPE.HALL):
-                dump ("Ignoring channel %d in channels graph"%(ch))
-		continue
-	    label = 'Motor '+str(CHANNEL_MOTOR_MAPPING[ch])
-            ax1.plot(reading_time[this_trial][ch],reading[this_trial][ch], label=label)
+	    if (CHANNEL_SENSOR_MAP[ch][2]==SENSOR_PURPOSE.MOTOR_CURRENT):
+	        label = 'Motor '+str(CHANNEL_MOTOR_MAPPING[ch])
+                ax1.plot(reading_time[this_trial][ch],reading[this_trial][ch], label=label)
 	
 	ax1.plot(micro_time[this_trial], total_curr[this_trial], 'b', label="Total current")
 
@@ -462,7 +460,7 @@ for this_trial in range(trials):
 
         ax1_twin = ax1.twinx()
         for ch in range(NUMBER_OF_CHANNELS):
-	    if (CHANNEL_SENSOR_MAP[ch][0]==SENSOR_TYPE.VOLTAGE):
+	    if (CHANNEL_SENSOR_MAP[ch][2]==SENSOR_PURPOSE.BATTERY_VOLTAGE):
 	        label = 'Battery Voltage'
                 ax1_twin.plot(reading_time[this_trial][ch], reading[this_trial][ch], label=label)
 

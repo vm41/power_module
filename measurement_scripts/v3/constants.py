@@ -24,6 +24,11 @@ class SENSOR_TYPE:
     HALL = 2
     SHUNT = 3
 
+class SENSOR_PURPOSE:
+    NONE = 0
+    BATTERY_VOLTAGE = 1
+    MOTOR_CURRENT = 2
+
 # CUSTOMIZE
 MODE_SELECT = PROGRAM_MODE.PI#selected mode
 VDD = 4.85 #actual voltage on a 5V pin powering the measurement module as float
@@ -61,19 +66,20 @@ LOG_HEADER = "#time		#event_type	#event_data(channel&current(A), MarkNumber, ...
 # Defining type of sensor on each channel of the ADC.
 # each cahnnel is a tuple, the first element is sensor type
 # second element is a calibration flag (true is to calibrate and false is raw readings)
+# third element is purpose type, is this sensor for a motor? is this measuring battery? or what?
 # you may want to calibrate those channels only, that have a biased reading
+# this list can be longer than needed (use for various number of channels)
 # CUSTOMIZE
 CHANNEL_SENSOR_MAP = [
-        (SENSOR_TYPE.HALL, True),           #channel 0
-        (SENSOR_TYPE.HALL, True), 
-        (SENSOR_TYPE.HALL, True), 
-        (SENSOR_TYPE.HALL, True), 
-        (SENSOR_TYPE.VOLTAGE, True),        #this is enabled to be stored at calibration, later should be uncalibrated.
-        (SENSOR_TYPE.DISABLE, False), 
-        (SENSOR_TYPE.DISABLE, False), 
-        (SENSOR_TYPE.DISABLE, False), 
-        (SENSOR_TYPE.DISABLE, False), 
-        (SENSOR_TYPE.DISABLE, False), 
-        (SENSOR_TYPE.DISABLE, False), 
-        (SENSOR_TYPE.DISABLE, False), 
+        (SENSOR_TYPE.HALL, True, SENSOR_PURPOSE.MOTOR_CURRENT),           #channel 0
+        (SENSOR_TYPE.HALL, True, SENSOR_PURPOSE.MOTOR_CURRENT), 
+        (SENSOR_TYPE.HALL, True, SENSOR_PURPOSE.MOTOR_CURRENT), 
+        (SENSOR_TYPE.HALL, True, SENSOR_PURPOSE.MOTOR_CURRENT), 
+        (SENSOR_TYPE.VOLTAGE, True, SENSOR_PURPOSE.BATTERY_VOLTAGE),        #this is enabled to be stored at calibration, later should be uncalibrated.
+        (SENSOR_TYPE.DISABLE, False, SENSOR_PURPOSE.NONE),
+        (SENSOR_TYPE.DISABLE, False, SENSOR_PURPOSE.NONE),
+        (SENSOR_TYPE.DISABLE, False, SENSOR_PURPOSE.NONE),
+        (SENSOR_TYPE.DISABLE, False, SENSOR_PURPOSE.NONE),
+        (SENSOR_TYPE.DISABLE, False, SENSOR_PURPOSE.NONE),
+        (SENSOR_TYPE.DISABLE, False, SENSOR_PURPOSE.NONE),
         ]
