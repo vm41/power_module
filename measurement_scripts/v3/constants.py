@@ -25,7 +25,7 @@ class SENSOR_TYPE:
     SHUNT = 3
 
 # CUSTOMIZE
-MODE_SELECT = PROGRAM_MODE.PI #selected mode
+MODE_SELECT = PROGRAM_MODE.PI#selected mode
 VDD = 4.85 #actual voltage on a 5V pin powering the measurement module as float
 DEBUG_MODE = False
 VERBOS_AVERAGE_WINDOW = 1000
@@ -35,6 +35,13 @@ PWR_HOST = "127.0.0.1"
 PWR_PORT = 35760
 PACKET_END = '\r\r\n\n'
 CALIBRATION_SAMPLES = 100
+
+
+EARTH_R = 6371000.0 # radius of earth for calculations
+REF_LONGITUDE = -78.79 # this may or may not be used within graph script
+REF_LATITUDE = 43.009 # this may or may not be used within graph script
+
+
 
 #LOG_BUFF_COUNT = number of readings before saving to file
 if MODE_SELECT == PROGRAM_MODE.PI:
