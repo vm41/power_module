@@ -16,30 +16,33 @@ NUMBER_OF_CHANNELS=5        #TODO this is ### CUSTOMZE ###
 CHANNEL_MOTOR_MAPPING=[1, 2, 3, 4]  # what motor is on each channel (put -1 for a channel that is not connected to a motor), refer to hardware specification to see where each motor is on the UAV. this may later on go to constant.py
 
 BATTERY_VOLTAGE=25.4 # this ensures power = current * voltage, should get updated with readings
-NUMBER_OF_DAYS=5
-NUMBER_OF_ROUNDS=1
+NUMBER_OF_ROUNDS=2
 NUMBER_OF_SETUPS=4
-SPEED_SETUPS = [2.0, 5.0, 7.0, 10.0]    #       <- ATTENTION
-ANGLE_SETUPS = [0, 45, 90, 135, 180]
+SPEED_SETUPS = [2.0, 5.0, 7.0]    #       <- ATTENTION
+TURN_SETUPS = [0, 45, 90, 135]
 HOVER_SETUPS = ['North', 'East', 'South', 'West']
+ROTATE_SETUPS = ['North', 'East', 'South', 'West']
+DISTANCE_SETUPS = [20.0, 40.0, 60.0, 80.0, 100.0]
 TARGET_SPEED = 5.0    #this will be updated automatically for "Speed" experiments
-TARGET_SETUP = "Hover" # either "Speed" or "Angle" or "Hover"
+TARGET_SETUP = "Turn" # either "Speed" or "Turn" or "Hover" or "Rotate" or "Distance"
 SPEED_MARKER_THRESHOLD=1.0     #first time and last time haveing targetSpeed - threshold, will be marked default: 1.0
+WAIT_FOR_MEASURE_FLAG = False # *** CAUTION ***. if on, anything before the first EVENT is ignored. each EVENT flags the measurement on/off
 STEADY_DETECTION = False        #whether we ar einterested in steady velocity detection or not
-SAVE_GRAPH_CHANNELS = True     #individual channel current vs. time
-SAVE_GRAPH_TOTAL = True        #total current vs. time
+SAVE_GRAPH_CHANNELS = False      #individual channel current vs. time
+SAVE_GRAPH_TOTAL = False        #total current vs. time
 SAVE_GRAPH_VELOCITY = False
-SAVE_GRAPH_ENERGY = True
-SAVE_GRAPH_POWER = True
+SAVE_GRAPH_ENERGY = False
+SAVE_GRAPH_POWER = False
 SAVE_GRAPH_PATH = False         # showing the trace
-GRAPH_PATH_ANIMATION = False    # animating the path
-RESET_INITIAL_LAT_LON = False # reset initial position based on each trial
-SAVE_GRAPH_SETUP_BASED = True
+GRAPH_PATH_ANIMATION = False     # animating the path
+RESET_INITIAL_LAT_LON = False   # reset initial position based on each trial
+SAVE_GRAPH_SETUP_BASED = False
 SAVE_GRAPH_ROUND_BASED = False
 APPLY_GRAPH_CUSTOMIZATION = True #yticks, ylimit range, etc.
-VALUE_MAKE_ABSOLUTE = True    #adjust negative values positive
-VALUE_LOWER_WARNING = -0.05     # value below which the script warns
+VALUE_MAKE_ABSOLUTE = True    # adjust negative values positive
+VALUE_LOWER_WARNING = -0.1     # value below which the script warns
 VALUE_UPPER_WARNING = 30        # value below which the script warns
+LOG_HEADER_LINES = 2  #how many lines in log files are okay to be ignored, typically at header
 STR_GRAPHS='current_graphs'
 STR_CROUND='constant_round'
 STR_CSETUP='constant_setup'
@@ -70,6 +73,18 @@ if (myFile!='ALL'):
         myFile = myFile[len(LOG_DIR)+1:]
         print myFile
 
+if (TARGET_SETUP=="Speed"):
+    CHOSEN_SETUPS = SPEED_SETUPS
+elif (TARGET_SETUP=="Distance"):
+    CHOSEN_SETUPS = DISTANCE_SETUPS
+elif (TARGET_SETUP=="Turn"):
+    CHOSEN_SETUPS = TURN_SETUPS
+elif (TARGET_SETUP=="Hover"):
+    CHOSEN_SETUPS = HOVER_SETUPS
+elif (TARGET_SETUP=="Rotate"):
+    CHOSEN_SETUPS = ROTATE_SETUPS
+else:
+    dump("UKNOWN TARGET SETUP: "+TARGET_SETUP)
 
 ##############################################################################
 #finding index of closest value
@@ -174,16 +189,16 @@ def refresh_directories():
     if (SAVE_GRAPH_ROUND_BASED):
         os.makedirs('%s/%s/%s'%(LOG_DIR,STR_GRAPHS,STR_CROUND))
         for i in range(NUMBER_OF_ROUNDS):
-            os.makedirs('%s/%s/%s/round-%d'%(LOG_DIR,STR_GRAPHS,STR_CROUND,i+1))
+            os.makedirs('%s/%s/%s/round-%d'%(LOG_DIR,STR_GRAPHS,STR_CROUND,i))
 
     if (SAVE_GRAPH_SETUP_BASED):
         os.makedirs('%s/%s/%s'%(LOG_DIR,STR_GRAPHS,STR_CSETUP))
         for i in range(NUMBER_OF_SETUPS):
-            os.makedirs('%s/%s/%s/%s-%d'%(LOG_DIR,STR_GRAPHS,STR_CSETUP,TARGET_SETUP,i+1))
+            os.makedirs('%s/%s/%s/%s-%s'%(LOG_DIR,STR_GRAPHS,STR_CSETUP,TARGET_SETUP,str(CHOSEN_SETUPS[i])))
             
     resultFile=open('%s/%s/all.csv'%(LOG_DIR,STR_GRAPHS),'a')
-    resultFile.write("Trial,File,Day,Round,Setup,TotalTime,TotalEnergy,Distance," + \
-                        "Displacement,AvgPower,AvgJ/m,TargetSetup(Angle/Speed/Orientation/etc.),AvgSpeed,SteadyTime,AvgSteadySpeed,SteadyDistance,SteadyEnergy,AvgSteadyJ/m,AvgSteadyPower\n")
+    resultFile.write("Trial,File,Set,Round,Setup,TotalTime,TotalEnergy,Distance," + \
+                        "Displacement,AvgPower,AvgJ/m,TargetSetup(Turn/Speed/Distance/Orientation/etc.),AvgSpeed,SteadyTime,AvgSteadySpeed,SteadyDistance,SteadyEnergy,AvgSteadyJ/m,AvgSteadyPower\n")
     resultFile.close()
 ###########################################################################################
 def dump(myStr):
@@ -218,6 +233,7 @@ power = []
 file_names = []
 
 trials=0
+
 
 for f in fileList:
     if (f.endswith('.log') and f.startswith('log')):
@@ -260,6 +276,11 @@ for f in fileList:
         counted=0
         TIME_REFERENCE=0
 
+        MEASURE_FLAG = False
+        MEASURE_TIME_STAMP = 0
+        if (WAIT_FOR_MEASURE_FLAG):
+            dump("** WAIT_FOR_MEASURE_FLAG is on. Waiting for an EVENT for measurement START/STOP **")
+
         while True:
             try:
                 line=fv.readline()
@@ -281,6 +302,22 @@ for f in fileList:
                     break
 
                 event_type=int(l[1])
+
+                if event_type==EVENT_TYPE.EVENT:
+                    if (WAIT_FOR_MEASURE_FLAG):
+                        MEASURE_FLAG = not (MEASURE_FLAG)
+                        if (MEASURE_FLAG):  # end of a NO_COUNT period, we should adjust time reference
+                            TIME_REFERENCE += time - MEASURE_TIME_STAMP - 0.0001 #subtracting epsilon to prevent two equal timestamps
+                            time = now - TIME_REFERENCE # re-adjusting time
+                        else:
+                            MEASURE_TIME_STAMP = time   #recording this time, so that later on we can adjust TIME_REFERENCE
+
+                    dump("EVENT on line %d. Switching MEASURE_FLAG"%(line_number))
+                    markers_time[trials].append(time)
+                    markers[trials].append(0)           #an event is a marker with mark = 0
+
+                if (WAIT_FOR_MEASURE_FLAG) and not (MEASURE_FLAG):  #ignoring measurements if not yet seen the mark.
+                    continue
 
                 if event_type==EVENT_TYPE.MEASUREMENT:
                     channel=int(l[2])
@@ -309,11 +346,6 @@ for f in fileList:
                         power[trials].append(BATTERY_VOLTAGE * (total_curr[trials][-1]+total_curr[trials][-2])/2)
                         energy[trials].append(energy[trials][-1] + power[trials][-1] * (micro_time[trials][-1]-micro_time[trials][-2]))
 
-
-                if event_type==EVENT_TYPE.EVENT:
-                    markers_time[trials].append(time)
-                    markers[trials].append(0)           #an event is a marker with mark = 0
-
                 if event_type==EVENT_TYPE.MARK:
                     mark=int(l[2])
                     markers_time[trials].append(time)
@@ -333,9 +365,10 @@ for f in fileList:
 
                 dump(str(e))
                 continue
-           # break
 
-        dump ("%d lines were read, %d lines counted"%(line_number, counted)) 
+        dump ("%d lines were read, %d lines counted"%(line_number, counted))
+        if (line_number > counted + LOG_HEADER_LINES):
+            dump("**** %d lines not counted (WAITING_FOR_MEASURE_FLAG enabled?) ****"%(line_number - counted - LOG_HEADER_LINES))
         dump ("within the trial#%d we found %d reading sets, %d events+markers, %d info messages"%(trials, len(reading[trials][0]),len(markers[trials]),len(info[trials])))
         fv.close()
 
@@ -361,26 +394,29 @@ sum_distance = [0.01] * trials   #sum of all delta_x (not zero, just because of 
 sum_distance_steady = [0.01] * trials   #sum of all delta_x for steady time (not zero, just because of division by zero)
 
 for this_trial in range(trials):
-    this_day=this_trial/(NUMBER_OF_ROUNDS * NUMBER_OF_SETUPS)
+    this_set=this_trial/(NUMBER_OF_ROUNDS * NUMBER_OF_SETUPS)
     this_setup=(this_trial/NUMBER_OF_ROUNDS) % NUMBER_OF_SETUPS
     this_round=this_trial%NUMBER_OF_ROUNDS
     if (TARGET_SETUP=="Speed"):
-        CHOSEN_SETUPS = SPEED_SETUPS
         TARGET_SPEED=SPEED_SETUPS[this_setup]
         added_setup_label = 'Speed = %.1f m/s'%(CHOSEN_SETUPS[this_setup])
-    elif (TARGET_SETUP=="Angle"):
-        CHOSEN_SETUPS = ANGLE_SETUPS
-        added_setup_label = 'Angle = %d deg'%(CHOSEN_SETUPS[this_setup])
+    elif (TARGET_SETUP=="Distance"):
+        added_setup_label = 'Distance = %d m'%(CHOSEN_SETUPS[this_setup])
+    elif (TARGET_SETUP=="Turn"):
+        added_setup_label = 'Turn = %d deg'%(CHOSEN_SETUPS[this_setup])
     elif (TARGET_SETUP=="Hover"):
-        CHOSEN_SETUPS = HOVER_SETUPS
         #added_setup_label = 'Current log for Thrust 1500 on 3 Cells Bat 1 Power supply'
         #added_setup_label = 'Current log for Thrust 1500 on 3 Cells Bat 2 Power supply'
         #added_setup_label = 'Current log for Thrust 1500 on 4 Cells Bat Power supply'
         added_setup_label = 'Orientation = %s'%(CHOSEN_SETUPS[this_setup])
+    elif (TARGET_SETUP=="Rotate"):
+        CHOSEN_SETUPS = ROTATE_SETUPS
+        added_setup_label = 'Orientation = %s'%(CHOSEN_SETUPS[this_setup])
     else:
         dump("UKNOWN TARGET SETUP: "+TARGET_SETUP)
         
-    dump('processing trial %d: day %d setup %d round %d ...'%(this_trial, this_day, this_setup, this_round))
+    dump('processing trial %d: set %d setup %d round %d ...'%(this_trial, this_set, this_setup, this_round))
+    added_title="Round = %d - %s _ Set %d"%(this_round+1,added_setup_label, this_set)
 
     velocity[this_trial], position[this_trial] = extract_info(info[this_trial])
     total_movement[this_trial] = extract_distance(position[this_trial][0], position[this_trial][-1])
@@ -427,9 +463,10 @@ for this_trial in range(trials):
     def save_this_plot(graph_type):
         plt.savefig('%s/%s/all/%s_%s.%s'%(LOG_DIR,STR_GRAPHS, file_names[this_trial], graph_type, GRAPH_FORMAT), dpi=GRAPH_DPI, format=GRAPH_FORMAT)
         if (SAVE_GRAPH_ROUND_BASED):
-            plt.savefig('%s/%s/%s/round-%d/%s_%s-%d.%s'%(LOG_DIR,STR_GRAPHS,STR_CROUND,this_day*NUMBER_OF_ROUNDS+this_round+1,graph_type, TARGET_SETUP,this_setup+1, GRAPH_FORMAT), dpi=GRAPH_DPI, format=GRAPH_FORMAT)
+            plt.savefig('%s/%s/%s/round-%d/%s_%s-%s_%d.%s'%(LOG_DIR,STR_GRAPHS,STR_CROUND, this_round+1, graph_type, TARGET_SETUP, str(CHOSEN_SETUPS[this_setup]), this_set, GRAPH_FORMAT), dpi=GRAPH_DPI, format=GRAPH_FORMAT)
         if (SAVE_GRAPH_SETUP_BASED):
-            plt.savefig('%s/%s/%s/%s-%d/%s_round-%d.%s'%(LOG_DIR,STR_GRAPHS,STR_CSETUP,TARGET_SETUP,this_setup+1,graph_type, this_day*NUMBER_OF_ROUNDS+this_round+1, GRAPH_FORMAT), dpi=GRAPH_DPI, format=GRAPH_FORMAT)
+            plt.savefig('%s/%s/%s/%s-%s/%s_round-%d_%d.%s'%(LOG_DIR,STR_GRAPHS,STR_CSETUP,TARGET_SETUP,str(CHOSEN_SETUPS[this_setup]),graph_type, this_round+1, this_set, GRAPH_FORMAT), dpi=GRAPH_DPI, format=GRAPH_FORMAT)
+        plt.close()
 ##############################################################################
 # graphing this trial in various forms
 
@@ -446,7 +483,7 @@ for this_trial in range(trials):
             ax1.axvline(x=markers_time[this_trial][i],color='k')      #TODO apply colors based on marker number
 
         if (APPLY_GRAPH_CUSTOMIZATION):
-            #ax1.set_ylim(9,15)
+            ax1.set_ylim(0,30)
             #yticks = ax1.yaxis.get_major_ticks()
             #yticks[-1].label1.set_visible(False)
             fig1.set_figwidth(GRAPH_FIG_WIDTH)
@@ -473,8 +510,7 @@ for this_trial in range(trials):
         ax1_twin.set_ylabel('Voltage (V)')
         ax1_twin.legend(loc='lower right')
         
-        plt.title('%d Channels - Round = %d - %s'%(NUMBER_OF_CHANNELS,this_day*NUMBER_OF_ROUNDS+this_round+1,added_setup_label))
-	#plt.title('Round %d: - %s'%(this_trial+1,added_setup_label))# - Round = %d %s'%(NUMBER_OF_CHANNELS,this_day*NUMBER_OF_ROUNDS+this_round+1,added_setup_label))
+        plt.title("%d Channels - %s"%(NUMBER_OF_CHANNELS, added_title))
 	#plt.grid()
         save_this_plot("channels")
 ###### 
@@ -490,7 +526,7 @@ for this_trial in range(trials):
             ax2.axvline(info_time[this_trial][stop_marker_index[this_trial]],color='r')
 
         if (APPLY_GRAPH_CUSTOMIZATION):
-            #ax2.set_ylim(9,15)
+            ax2.set_ylim(8, 26)
             #yticks = ax2.yaxis.get_major_ticks()
             #yticks[-1].label1.set_visible(False)
             fig2.set_figwidth(GRAPH_FIG_WIDTH)
@@ -499,7 +535,7 @@ for this_trial in range(trials):
 
         ax2.set_xlabel('Time (s)')
         ax2.set_ylabel('Total Current (A)')
-        plt.title('Total Current - Round = %d - %s'%(this_day*NUMBER_OF_ROUNDS+this_round+1,added_setup_label))
+        plt.title("Total Current - %s"%(added_title))
         save_this_plot("total")
 ###### 
     if (SAVE_GRAPH_ENERGY):
@@ -520,7 +556,7 @@ for this_trial in range(trials):
         ax3.set_xlabel('Time (s)')
         ax3.set_ylabel('Total Energy (J)')
         
-        plt.title('Cumulative Energy - Round = %d - %s'%(this_day*NUMBER_OF_ROUNDS+this_round+1,added_setup_label))
+        plt.title("Cumulative Energy - %s"%(added_title))
         save_this_plot("energy")
 ###### 
     if (SAVE_GRAPH_POWER):
@@ -531,7 +567,7 @@ for this_trial in range(trials):
             ax4.axvline(x=markers_time[this_trial][i],color='k')      #TODO apply colors based on marker number
 
         if (APPLY_GRAPH_CUSTOMIZATION):
-            #ax4.set_ylim(9,15)
+            ax4.set_ylim(200, 650)
             #yticks = ax3.yaxis.get_major_ticks()
             #yticks[-1].label1.set_visible(False)
             fig4.set_figwidth(GRAPH_FIG_WIDTH)
@@ -541,7 +577,7 @@ for this_trial in range(trials):
         ax4.set_xlabel('Time (s)')
         ax4.set_ylabel('Power (W)')
         
-        plt.title('Instantaneous Power - Round = %d - %s'%(this_day*NUMBER_OF_ROUNDS+this_round+1,added_setup_label))
+        plt.title("Instantaneous Power - %s"%(added_title))
         save_this_plot("power")
 ###### 
     if (SAVE_GRAPH_VELOCITY):
@@ -564,7 +600,7 @@ for this_trial in range(trials):
 
         ax5.set_xlabel('Time (s)')
         ax5.set_ylabel('Velocity (m/s)')
-        plt.title('Measured Velocity - Round = %d - %s'%(this_day*NUMBER_OF_ROUNDS+this_round+1,added_setup_label))
+        plt.title("Velocity - %s"%(added_title))
         save_this_plot("velocity")
 ###### 
     if (SAVE_GRAPH_PATH):
@@ -576,7 +612,8 @@ for this_trial in range(trials):
             path_x.append(position[this_trial][u][0])
             path_y.append(position[this_trial][u][1])
 
-        ax6.plot(path_x, path_y, 'r', linewidth=2)
+        ax6.plot(path_x, path_y, 'b', linewidth=2)
+        ax6.scatter(path_x[0], path_y[0], c='r', s=10)
 
         if (APPLY_GRAPH_CUSTOMIZATION):
 #            path_x = [_ - min_x +10 for _ in path_x]
@@ -584,8 +621,8 @@ for this_trial in range(trials):
             pass
 
         if (APPLY_GRAPH_CUSTOMIZATION):
-            ax6.set_xlim(-100,100)
-            ax6.set_ylim(-100,100)
+            ax6.set_xlim(-120,120)
+            ax6.set_ylim(-120,120)
             #yticks = ax6.yaxis.get_major_ticks()
             #yticks[-1].label1.set_visible(False)
             plt.gca().set_aspect('equal', adjustable='box')
@@ -593,7 +630,7 @@ for this_trial in range(trials):
 
         ax6.set_xlabel('Position X (m)')
         ax6.set_ylabel('Position Y (m)')
-        plt.title('Experimental Path - Round = %d - %s'%(this_day*NUMBER_OF_ROUNDS+this_round+1, added_setup_label))
+        plt.title("Experiment Path - %s"%(added_title))
         save_this_plot("path")
 ######        
     if (GRAPH_PATH_ANIMATION):
@@ -605,6 +642,7 @@ for this_trial in range(trials):
             path_x.append(position[this_trial][u][0])
             path_y.append(position[this_trial][u][1])
 
+        ax7.scatter(path_x[0], path_y[0], c='r', s=10)
         trace_data, = ax7.plot([], [])
         ##############################################################################
         #trace_graph animation
@@ -614,11 +652,11 @@ for this_trial in range(trials):
 
 
         anim = animation.FuncAnimation(fig7, trace_animate,
-                                        frames=len(path_x), interval = 20, blit=True, repeat = False)
+                                        frames=len(path_x), interval = 30, blit=True, repeat = True)
 
         if (APPLY_GRAPH_CUSTOMIZATION):
-            ax7.set_xlim(-100,100)
-            ax7.set_ylim(-100,100)
+            ax7.set_xlim(-120,120)
+            ax7.set_ylim(-120,120)
             #yticks = ax7.yaxis.get_major_ticks()
             #yticks[-1].label1.set_visible(False)
             plt.gca().set_aspect('equal', adjustable='box')
@@ -626,8 +664,10 @@ for this_trial in range(trials):
             
         ax7.set_xlabel('Position X (m)')
         ax7.set_ylabel('Position Y (m)')
-        plt.title('Experimental Path - Round = %d %s'%(this_day*NUMBER_OF_ROUNDS+this_round+1,added_setup_label))        
-        plt.show()
+        plt.title(file_names[this_trial]+" - %s"%(added_title)) 
+#        plt.show()
+        plt.draw()
+        plt.pause(2.5)
 ######        
     plt.close('all')
 ##############################################################################
@@ -636,7 +676,7 @@ for this_trial in range(trials):
     resultFile=open('%s/%s/all.csv'%(LOG_DIR,STR_GRAPHS),'a')
     
     resultFile.write("%d,%s,%d,%d,%d,%.3f,%.3f,%.3f,%.3f,%.2f,%.2f,%s,%5.2f,%.2f,%5.2f,%7.3f,%10.3f,%.3f,%.3f\n" \
-                %(this_trial+1, file_names[this_trial],this_day, this_round, this_setup, micro_time[this_trial][-1],energy[this_trial][-1], 
+                %(this_trial+1, file_names[this_trial],this_set, this_round, this_setup, micro_time[this_trial][-1],energy[this_trial][-1], 
             sum_distance[this_trial], total_movement[this_trial], energy[this_trial][-1]/micro_time[this_trial][-1], energy[this_trial][-1]/sum_distance[this_trial], 
             str(CHOSEN_SETUPS[this_setup]), sum_distance[this_trial]/micro_time[this_trial][-1], steady_duration[this_trial], sum_distance_steady[this_trial]/steady_duration[this_trial], 
             sum_distance_steady[this_trial], delta_energy[this_trial], delta_energy[this_trial]/sum_distance_steady[this_trial], delta_energy[this_trial]/steady_duration[this_trial]))
