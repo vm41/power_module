@@ -111,6 +111,8 @@ class Measure(object):
         while True:
             try:
                 now=time.time()
+                if ((reading_count / len(self.CHANNEL_TO_MEASURE)) % 100 == 0): #every 100 reading set, wait a bit to empty TCP buffer. sleep(0) has not worked very well?
+                    time.sleep(0.001)
                 if (channel==0):
                     time.sleep(0)
                     if (self.LOG_EVENT):
@@ -244,6 +246,7 @@ if __name__ == '__main__':
     sensorLogger.dump("Waiting for the client to connect to IP "+PWR_HOST)
     clientsock, add = serversock.accept()
     sensorLogger.dump("Client connected")
+    corrupt_flag=False
     while True:
         try: 
             sensorLogger.dump("Waiting for a command from client")
@@ -265,7 +268,16 @@ if __name__ == '__main__':
                 sensorLogger.dump("Client connected")
                 continue
             sensorLogger.dump("Data received from client:" + repr(data))
-            for command in data.split(PACKET_END):
+            if (corrupt_flag==True):  #last buffer contained corrupt packet that we concatinate to this one
+                sensorLogger.dump("WARNING: concatinating previous corrupt packet portion to this one")
+                data=corrupt_packet + data
+                corrupt_flag=False
+            if !(data.endswith(PACKET_END)): # now we check if the new packet is in full form
+                corrupt_packet=data.split(PACKET_END)[-1]
+                corrupt_flag=True
+                sensorLogger.dump("WARNING: packet seems to be corrupted and does not end with signature, considering it corrupt, and will concatinate it next time. corrupted portion: "+corrupt_packet)
+
+            for command in data[0:data.rfind(PACKET_END)].split(PACKET_END): # only looking at full packets in data, so choosing the last occurance of PACKET_END as end of string
                 if command=="":
                     continue
                 #sensorLogger.dump("The number for command is: %d"%(int(command[0].encode("hex"),16)))
