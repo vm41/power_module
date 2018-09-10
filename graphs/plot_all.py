@@ -18,6 +18,7 @@ CHANNEL_MOTOR_MAPPING=[1, 2, 3, 4]  # what motor is on each channel (put -1 for 
 BATTERY_VOLTAGE=25.4 # this ensures power = current * voltage, should get updated with readings
 NUMBER_OF_ROUNDS=2
 NUMBER_OF_SETUPS=4
+INITIAL_SETUP=0  #USUALLY should be 0. unless you want to skip setups. for example if all trials are 90 degree, then NUMBER_OF_SETUPS=1 and INITIAL_SETUP=2
 SPEED_SETUPS = [2.0, 5.0, 7.0]    #       <- ATTENTION
 TURN_SETUPS = [0, 45, 90, 135]
 HOVER_SETUPS = ['North', 'East', 'South', 'West']
@@ -27,14 +28,16 @@ TARGET_SPEED = 5.0    #this will be updated automatically for "Speed" experiment
 TARGET_SETUP = "Turn" # either "Speed" or "Turn" or "Hover" or "Rotate" or "Distance"
 SPEED_MARKER_THRESHOLD=1.0     #first time and last time haveing targetSpeed - threshold, will be marked default: 1.0
 WAIT_FOR_MEASURE_FLAG = False # *** CAUTION ***. if on, anything before the first EVENT is ignored. each EVENT flags the measurement on/off
+                              # *** CAUTION *** This flag changes TIME_REFERENCE, and INFO_TIME will be unreliable and wrong.
+
 STEADY_DETECTION = False        #whether we ar einterested in steady velocity detection or not
 SAVE_GRAPH_CHANNELS = False      #individual channel current vs. time
 SAVE_GRAPH_TOTAL = False        #total current vs. time
 SAVE_GRAPH_VELOCITY = False
 SAVE_GRAPH_ENERGY = False
 SAVE_GRAPH_POWER = False
-SAVE_GRAPH_PATH = False         # showing the trace
-GRAPH_PATH_ANIMATION = False     # animating the path
+SAVE_GRAPH_PATH = True         # showing the trace
+GRAPH_PATH_ANIMATION = True     # animating the path
 RESET_INITIAL_LAT_LON = False   # reset initial position based on each trial
 SAVE_GRAPH_SETUP_BASED = False
 SAVE_GRAPH_ROUND_BASED = False
@@ -73,6 +76,7 @@ if (myFile!='ALL'):
         myFile = myFile[len(LOG_DIR)+1:]
         print myFile
 
+CHOSEN_SETUPS=[]
 if (TARGET_SETUP=="Speed"):
     CHOSEN_SETUPS = SPEED_SETUPS
 elif (TARGET_SETUP=="Distance"):
@@ -85,6 +89,7 @@ elif (TARGET_SETUP=="Rotate"):
     CHOSEN_SETUPS = ROTATE_SETUPS
 else:
     dump("UKNOWN TARGET SETUP: "+TARGET_SETUP)
+    exit(0)
 
 ##############################################################################
 #finding index of closest value
@@ -135,16 +140,55 @@ def extract_info(msg):
     lat_msg = "LAT="
     lon_msg = "LON="
     alt_msg = "ALT="
+    t = []
     v = []
     lat = []
     lon = []
     alt = []
     pos = []
+
     for m in msg:
-        v.append(float(m[m.find(v_msg)+len(v_msg):].split('\t')[0]))
-        lat.append(float(m[m.find(lat_msg)+len(lat_msg):].split('\t')[0]))
-        lon.append(float(m[m.find(lon_msg)+len(lon_msg):].split('\t')[0]))
-        alt.append(float(m[m.find(alt_msg)+len(alt_msg):].split('\t')[0]))
+        # first we should make sure if this message is a whole, and does not miss a pice of info.
+        if ((m.find(v_msg) < 0) or 
+                (m.find(lat_msg) < 0) or
+                (m.find(lon_msg) < 0) or
+                (m.find(alt_msg) < 0)):
+            # ignore the whole message and keep previous values (we do this to match length of lists)
+            t.append(t[-1])
+            v.append(v[-1])
+            lat.append(lat[-1])
+            lon.append(lon[-1])
+            alt.append(alt[-1])
+            dump("WARNING: there seems to be a problem with this info(missing info), produces duplicate: "+m)
+            continue
+
+        tmp_t=m.split('\t')[0] #TODO info starts with time?
+        tmp_v=m[m.find(v_msg)+len(v_msg):].split('\t')[0]
+        tmp_lat=m[m.find(lat_msg)+len(lat_msg):].split('\t')[0]
+        tmp_lon=m[m.find(lon_msg)+len(lon_msg):].split('\t')[0]
+        tmp_alt=m[m.find(alt_msg)+len(alt_msg):].split('\t')[0]
+
+        MEANINGFUL_CHARACTERS = 10 #each one should have at least this, to be considered legit (in case of corrupted info)
+        if (len(tmp_t)<MEANINGFUL_CHARACTERS
+             or len(tmp_v) < MEANINGFUL_CHARACTERS
+             or len(tmp_lat) < MEANINGFUL_CHARACTERS
+             or len(tmp_lon) < MEANINGFUL_CHARACTERS
+             or len(tmp_alt) < MEANINGFUL_CHARACTERS): #problem reading one?
+            # ignore the whole message and keep previous values (we do this to match length of lists)
+            t.append(t[-1])
+            v.append(v[-1])
+            lat.append(lat[-1])
+            lon.append(lon[-1])
+            alt.append(alt[-1])
+            dump("WARNING: there seems to be a problem with this info(corrupted info), produces duplicate: "+m)
+            continue
+
+        t.append(float(tmp_t))
+        v.append(float(tmp_v))
+        lat.append(float(tmp_lat))
+        lon.append(float(tmp_lon))
+        alt.append(float(tmp_alt))
+
     if (RESET_INITIAL_LAT_LON):
         INITIAL_LATITUDE = lat[0] * math.pi / 180.0
         INITIAL_LONGITUDE = lon[0] * math.pi / 180.0
@@ -153,7 +197,7 @@ def extract_info(msg):
         INITIAL_LONGITUDE = REF_LONGITUDE * math.pi / 180.0
     for i in range(len(lat)):
         pos.append(extract_coordinate(lat[i], lon[i], alt[i]))
-    return v, pos
+    return t, v, pos
 ##############################################################################
 #avg using r points to the left
 #and r points to the right of the point
@@ -197,7 +241,7 @@ def refresh_directories():
             os.makedirs('%s/%s/%s/%s-%s'%(LOG_DIR,STR_GRAPHS,STR_CSETUP,TARGET_SETUP,str(CHOSEN_SETUPS[i])))
             
     resultFile=open('%s/%s/all.csv'%(LOG_DIR,STR_GRAPHS),'a')
-    resultFile.write("Trial,File,Set,Round,Setup,TotalTime,TotalEnergy,Distance," + \
+    resultFile.write("#Trial,File,Set,Round,Setup,TotalTime,TotalEnergy,Distance," + \
                         "Displacement,AvgPower,AvgJ/m,TargetSetup(Turn/Speed/Distance/Orientation/etc.),AvgSpeed,SteadyTime,AvgSteadySpeed,SteadyDistance,SteadyEnergy,AvgSteadyJ/m,AvgSteadyPower\n")
     resultFile.close()
 ###########################################################################################
@@ -221,7 +265,7 @@ if (sys.argv[1] != 'ALL'):
 reading = []
 reading_time = []
 info= []
-info_time = []
+info_record_time = []
 markers = []
 markers_time = []
 
@@ -258,7 +302,7 @@ for f in fileList:
         markers.append([]) 
         markers_time.append([]) 
         info.append([])
-        info_time.append([])
+        info_record_time.append([])
 
         micro_time.append([])
         total_curr.append([])
@@ -353,7 +397,7 @@ for f in fileList:
 
                 if event_type==EVENT_TYPE.INFO:
                     information="\t".join(l[2:])
-                    info_time[trials].append(time)
+                    info_record_time[trials].append(time) #this is in reiception timing. might not be the actual time of the information, that should be extracted from within info message.
                     info[trials].append(information)
 
                 counted=counted+1
@@ -380,6 +424,7 @@ for f in fileList:
         ######################################### GRAPHS  #############################################
 dump('========================================')
 
+info_time = [[]] * trials
 velocity = [[]] * trials
 position = [[]] * trials
 start_marker_index = [-1] * trials
@@ -395,7 +440,7 @@ sum_distance_steady = [0.01] * trials   #sum of all delta_x for steady time (not
 
 for this_trial in range(trials):
     this_set=this_trial/(NUMBER_OF_ROUNDS * NUMBER_OF_SETUPS)
-    this_setup=(this_trial/NUMBER_OF_ROUNDS) % NUMBER_OF_SETUPS
+    this_setup=INITIAL_SETUP + ((this_trial/NUMBER_OF_ROUNDS) % NUMBER_OF_SETUPS)
     this_round=this_trial%NUMBER_OF_ROUNDS
     if (TARGET_SETUP=="Speed"):
         TARGET_SPEED=SPEED_SETUPS[this_setup]
@@ -418,7 +463,10 @@ for this_trial in range(trials):
     dump('processing trial %d: set %d setup %d round %d ...'%(this_trial, this_set, this_setup, this_round))
     added_title="Round = %d - %s _ Set %d"%(this_round+1,added_setup_label, this_set)
 
-    velocity[this_trial], position[this_trial] = extract_info(info[this_trial])
+    info_time[this_trial], velocity[this_trial], position[this_trial] = extract_info(info[this_trial])
+    dump("%d piece of information extracted"%len(info_time[this_trial]))
+    #adjusting info times with recording times reference:
+    info_time[this_trial]= [t-info_time[this_trial][0]+info_record_time[this_trial][0] for t in info_time[this_trial]]
     total_movement[this_trial] = extract_distance(position[this_trial][0], position[this_trial][-1])
 
     for ch in range(NUMBER_OF_CHANNELS):
@@ -652,7 +700,7 @@ for this_trial in range(trials):
 
 
         anim = animation.FuncAnimation(fig7, trace_animate,
-                                        frames=len(path_x), interval = 30, blit=True, repeat = True)
+                                        frames=len(path_x), interval = 10, blit=True, repeat = True)
 
         if (APPLY_GRAPH_CUSTOMIZATION):
             ax7.set_xlim(-120,120)
