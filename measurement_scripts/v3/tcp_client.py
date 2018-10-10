@@ -16,18 +16,18 @@ while True:
 		sys.stdout.write('Enter command: ')
 		sys.stdout.flush()
 		MESSAGE = raw_input()
-		if MESSAGE=='Q':
+		if (MESSAGE=='Q' or MESSAGE=='q'):
 			print ('exiting')
 			sys.stdout.flush()
 			break
 		command=bytearray()
-		if MESSAGE=='S':
+		if (MESSAGE=='S' or MESSAGE=='s'):
 			command.append(PWR_Command.PWR_START)
-		if MESSAGE=='F':
+		if (MESSAGE=='F' or MESSAGE=='f'):
 			command.append(PWR_Command.PWR_STOP)
-		if MESSAGE=='E':
+		if (MESSAGE=='E' or MESSAGE=='e'):
 			command.append(PWR_Command.PWR_EVENT)
-		if MESSAGE.startswith('M'):
+		if (MESSAGE.startswith('M') or MESSAGE.startswith('m')):
 			command.append(PWR_Command.PWR_MARK)
 			number=int(MESSAGE[1:])
 			command.append(hex2bytes(int2hex(number)))
