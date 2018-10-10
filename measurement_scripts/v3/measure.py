@@ -235,7 +235,7 @@ if __name__ == '__main__':
     # CUSTOMIZE
     # uncalibrate any channel if needed
     adc.uncalibrate(4) #this channel should be uncalibrated to read battery
-    sensorLogger.dump("Channel %d uncalibrated to 0.0"%(ch))   
+    sensorLogger.dump("Channel %d uncalibrated to 0.0"%(4))   
 
     ADDR = (PWR_HOST,PWR_PORT)
     serversock=socket(AF_INET,SOCK_STREAM)
