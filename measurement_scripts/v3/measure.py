@@ -84,8 +84,9 @@ class Measure(object):
         newStr = time.strftime("%Y_%m_%d_%H_%M_%S \t",
                 time.localtime(now))+"%14.3f"%now+"\t"+myStr
         print newStr
-        self.DUMP_FILE.write(newStr+"\n")
         sys.stdout.flush()
+        self.DUMP_FILE.write(newStr+"\n")
+        self.DUMP_FILE.flush()
         dumpLock.release()
     ###########################################################################################
     def logging(self):
@@ -254,25 +255,38 @@ if __name__ == '__main__':
             if data=="":
                 #this would happen in case the client closes and wants to reopen.
                 sensorLogger.dump("There seems to be something wrong with the socket, accepting another socket")
-                if sensorLogger.IS_LOGGING==True:
-                    sensorLogger.dump("Force finishing previous measurement")
-                    sensorLogger.FINISH_LOGGING=True
-                    myThread.join()
-                    sensorLogger.IS_LOGGING=False
-                    sensorLogger.dump("Child thread is done, this session is finished")
-                clientsock, add = serversock.accept()
-                sensorLogger.open_session()
-                sensorLogger.dump("--------------------------------------")
-                sensorLogger.dump("RESTARTING SESSION")
-                sensorLogger.dump("Writing logs to folder: %s"%(LOG_DIR+"/"+sensorLogger.SESSION_DIR))
-                sensorLogger.dump("Client connected")
+
+                # we are dependent on current session, so upon losing current
+                # sesssion, we should finish our measurement and wait for next one to restart
+                if TCP_CLIENT_DEPENDENT==True:
+                    sensorLogger.dump("TCP_CLIENT_DEPENDENCY ist True, finishing up current session...")
+                    if sensorLogger.IS_LOGGING==True:
+                        sensorLogger.dump("Force finishing previous measurement")
+                        sensorLogger.FINISH_LOGGING=True
+                        myThread.join()
+                        sensorLogger.IS_LOGGING=False
+                        sensorLogger.dump("Child thread is done, this session is finished")
+                    clientsock, add = serversock.accept()
+                    sensorLogger.open_session()
+                    sensorLogger.dump("--------------------------------------")
+                    sensorLogger.dump("RESTARTING SESSION")
+                    sensorLogger.dump("Writing logs to folder: %s"%(LOG_DIR+"/"+sensorLogger.SESSION_DIR))
+                    sensorLogger.dump("Client connected")
+                # if we are not dependent on current session, we will just
+                # continue measuring, and wait for a possible connection without restart
+                else:
+                    sensorLogger.dump("TCP_CLIENT_DEPENDENCY ist False, ignoring the disconnection...")
+                    clientsock, add = serversock.accept()
+                    sensorLogger.dump("--------------------------------------")
+                    sensorLogger.dump("Client connected")
+                    sensorLogger.dump("CONTINUING PREVIOUS SESSOIN")
                 continue
             sensorLogger.dump("Data received from client:" + repr(data))
             if (corrupt_flag==True):  #last buffer contained corrupt packet that we concatinate to this one
                 sensorLogger.dump("WARNING: concatinating previous corrupt packet portion to this one")
                 data=corrupt_packet + data
                 corrupt_flag=False
-            if !(data.endswith(PACKET_END)): # now we check if the new packet is in full form
+            if not (data.endswith(PACKET_END)): # now we check if the new packet is in full form
                 corrupt_packet=data.split(PACKET_END)[-1]
                 corrupt_flag=True
                 sensorLogger.dump("WARNING: packet seems to be corrupted and does not end with signature, considering it corrupt, and will concatinate it next time. corrupted portion: "+corrupt_packet)

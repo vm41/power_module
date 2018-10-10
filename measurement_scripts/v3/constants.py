@@ -28,13 +28,17 @@ class SENSOR_PURPOSE:
     NONE = 0
     BATTERY_VOLTAGE = 1
     MOTOR_CURRENT = 2
+    DEVICE_CURRENT = 3
 
 # CUSTOMIZE
 MODE_SELECT = PROGRAM_MODE.PI#selected mode
 VDD = 4.85 #actual voltage on a 5V pin powering the measurement module as float
 DEBUG_MODE = False
 VERBOS_AVERAGE_WINDOW = 1000
-#DEVICE_ADDRESS=ADC_ADDRESS.MID_MID
+
+#if True (default), then the measurement will finish when tcp_client closes
+#if false, the measurement will ocntinue after disconnection (and should probably be killed manually)
+TCP_CLIENT_DEPENDENT=False
 
 PWR_HOST = "127.0.0.1"
 PWR_PORT = 35760
@@ -76,7 +80,7 @@ CHANNEL_SENSOR_MAP = [
         (SENSOR_TYPE.HALL, True, SENSOR_PURPOSE.MOTOR_CURRENT), 
         (SENSOR_TYPE.HALL, True, SENSOR_PURPOSE.MOTOR_CURRENT), 
         (SENSOR_TYPE.VOLTAGE, True, SENSOR_PURPOSE.BATTERY_VOLTAGE),        #this is enabled to be stored at calibration, later should be uncalibrated.
-        (SENSOR_TYPE.DISABLE, False, SENSOR_PURPOSE.NONE),
+        (SENSOR_TYPE.HALL, True, SENSOR_PURPOSE.DEVICE_CURRENT),
         (SENSOR_TYPE.DISABLE, False, SENSOR_PURPOSE.NONE),
         (SENSOR_TYPE.DISABLE, False, SENSOR_PURPOSE.NONE),
         (SENSOR_TYPE.DISABLE, False, SENSOR_PURPOSE.NONE),
