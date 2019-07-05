@@ -1,0 +1,10 @@
+Partlist exported from /Users/jerinabr/Google Drive/Eagle_Projects/USB_Current_Sensor/Schematic.sch at 7/5/19 11:51 AM
+
+Qty Value        Device       Package          Parts    Description                                                                            MPN          OC_FARNELL OC_NEWARK PACKAGE  SPICEPREFIX SUPPLIER         
+2                2,54/1,0     2,54/1,0         GND, OUT THROUGH-HOLE PAD                                                                                                                                               
+1   0.1uF        C-USC1808    C1808            C1       CAPACITOR, American symbol                                                                                                        C                            
+1   0.5          R-US_R1206   R1206            R1       RESISTOR, American symbol                                                                                                         R                            
+1   2k           R-US_R1206   R1206            R2       RESISTOR, American symbol                                                                                                         R                            
+1   629004113921 629004113921 629004113921     K1       WR-COM Plug SMT With Clip USB Type A,4 pins=>Code : Con_I-O_COM_USB-2.0_A_629004113921                                                                         
+1   62900416021  62900416021  62900416021      K2       WR-COM SMT Horizontal USB Type A,4 pins=>Code : Con_I-O_COM_USB-2.0_A_62900416021                                                                              
+1   INA139NA/250 INA139NA/250 SOT95P280X145-5N U1       High-Side Measurement CURRENT SHUNT MONITOR                                            INA139NA/250 1470398    39C3949   SOT-23-5             Texas Instruments
