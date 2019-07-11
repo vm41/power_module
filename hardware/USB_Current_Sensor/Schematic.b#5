@@ -144,10 +144,10 @@
 </layers>
 <board>
 <plain>
-<wire x1="0" y1="0" x2="100" y2="0" width="0" layer="20"/>
-<wire x1="100" y1="0" x2="100" y2="80" width="0" layer="20"/>
-<wire x1="100" y1="80" x2="0" y2="80" width="0" layer="20"/>
-<wire x1="0" y1="80" x2="0" y2="0" width="0" layer="20"/>
+<wire x1="1.27" y1="29.21" x2="40.31" y2="29.21" width="0" layer="20"/>
+<wire x1="40.31" y1="29.21" x2="40.31" y2="52.06" width="0" layer="20"/>
+<wire x1="40.31" y1="52.06" x2="1.27" y2="52.06" width="0" layer="20"/>
+<wire x1="1.27" y1="52.06" x2="1.27" y2="29.21" width="0" layer="20"/>
 </plain>
 <libraries>
 <library name="wirepad" urn="urn:adsk.eagle:library:412">
@@ -1497,7 +1497,7 @@ Copyright: Würth Elektronik</description>
 <class number="0" name="default" width="0" drill="0">
 </class>
 </classes>
-<designrules name="default">
+<designrules name="default *">
 <description language="de">&lt;b&gt;EAGLE Design Rules&lt;/b&gt;
 &lt;p&gt;
 Die Standard-Design-Rules sind so gewählt, dass sie für 
@@ -1715,7 +1715,7 @@ design rules under a new name.</description>
 </element>
 <element name="K1" library="Wurth_Elektronik_Electromechanic_Input-Output_Connectors_rev15c" package="629004113921" value="629004113921" x="7.62" y="40.64" smashed="yes" rot="R90">
 <attribute name="NAME" x="-12.0059" y="37.7705" size="1.27" layer="25" rot="R90"/>
-<attribute name="VALUE" x="10.5734" y="37.1355" size="1.27" layer="27" rot="R90"/>
+<attribute name="VALUE" x="10.5734" y="34.5955" size="1.27" layer="27" rot="R90"/>
 </element>
 <element name="K2" library="Wurth_Elektronik_Electromechanic_Input-Output_Connectors_rev15c" package="62900416021" value="62900416021" x="33.02" y="40.64" smashed="yes" rot="R90">
 <attribute name="NAME" x="30.4391" y="37.438" size="1.27" layer="25" rot="R90"/>
@@ -1729,7 +1729,6 @@ design rules under a new name.</description>
 <contactref element="R2" pad="1"/>
 <contactref element="C1" pad="2"/>
 <wire x1="20.472" y1="34.29" x2="20.32" y2="34.442" width="0.3048" layer="1"/>
-<wire x1="20.32" y1="34.442" x2="20.32" y2="38.0746" width="0.3048" layer="1"/>
 <wire x1="20.32" y1="38.48025" x2="20.32" y2="38.0746" width="0.3048" layer="1"/>
 <polygon width="0.3048" layer="1">
 <vertex x="2.54" y="50.8"/>

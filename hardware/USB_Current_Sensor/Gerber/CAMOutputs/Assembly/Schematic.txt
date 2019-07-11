@@ -1,4 +1,4 @@
-Partlist exported from /Users/jerinabr/Google Drive/Eagle_Projects/USB_Current_Sensor/Schematic.sch at 7/6/19 11:55 AM
+Partlist exported from /Users/jerinabr/Google Drive/Eagle_Projects/USB_Current_Sensor/Schematic.sch at 7/11/19 1:01 AM
 
 Qty Value        Device       Package          Parts    Description                                                                            MPN          OC_FARNELL OC_NEWARK PACKAGE  SPICEPREFIX SUPPLIER         
 2                2,54/1,0     2,54/1,0         GND, OUT THROUGH-HOLE PAD                                                                                                                                               
