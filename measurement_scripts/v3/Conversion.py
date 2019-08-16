@@ -7,6 +7,8 @@ class Conversion:
         if(sensor_type == SENSOR_TYPE.HALL): # for hall effect sensor
             result =  data_raw * 10  #  100mV per 1Amp 
         if(sensor_type == SENSOR_TYPE.VOLTAGE): # for voltage
-            result =  data_raw * 11 # divider using 10k-100k resistors
+            result =  data_raw * 11.3 # divider using 10k-100k resistors
+        if(sensor_type == SENSOR_TYPE.SHUNT) : # for current sensor
+            result =  data_raw # 1V per 1A
         return result
 

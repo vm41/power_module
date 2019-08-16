@@ -32,7 +32,7 @@ class SENSOR_PURPOSE:
 
 # CUSTOMIZE
 MODE_SELECT = PROGRAM_MODE.PI#selected mode
-VDD = 4.85 #actual voltage on a 5V pin powering the measurement module as float
+VDD = 5.00 #actual voltage on a 5V pin powering the measurement module as float
 DEBUG_MODE = False
 VERBOS_AVERAGE_WINDOW = 1000
 
@@ -77,12 +77,12 @@ LOG_HEADER = "#time		#event_type	#event_data(channel&current(A), MarkNumber, ...
 CHANNEL_SENSOR_MAP = [
         (SENSOR_TYPE.HALL, True, SENSOR_PURPOSE.MOTOR_CURRENT),           #channel 0
         (SENSOR_TYPE.HALL, True, SENSOR_PURPOSE.MOTOR_CURRENT), 
-        (SENSOR_TYPE.HALL, True, SENSOR_PURPOSE.MOTOR_CURRENT), 
-        (SENSOR_TYPE.HALL, True, SENSOR_PURPOSE.MOTOR_CURRENT), 
-        (SENSOR_TYPE.VOLTAGE, True, SENSOR_PURPOSE.BATTERY_VOLTAGE),        #this is enabled to be stored at calibration, later should be uncalibrated.
-        (SENSOR_TYPE.HALL, True, SENSOR_PURPOSE.DEVICE_CURRENT),
-        (SENSOR_TYPE.DISABLE, False, SENSOR_PURPOSE.NONE),
-        (SENSOR_TYPE.DISABLE, False, SENSOR_PURPOSE.NONE),
+        (SENSOR_TYPE.SHUNT, False, SENSOR_PURPOSE.DEVICE_CURRENT), 
+        (SENSOR_TYPE.DISABLE, False, SENSOR_PURPOSE.NONE), 
+        (SENSOR_TYPE.DISABLE, False, SENSOR_PURPOSE.NONE),        #this is enabled to be stored at calibration, later should be uncalibrated.
+        (SENSOR_TYPE.VOLTAGE, False, SENSOR_PURPOSE.BATTERY_VOLTAGE),
+        (SENSOR_TYPE.HALL, True, SENSOR_PURPOSE.MOTOR_CURRENT),
+        (SENSOR_TYPE.HALL, True, SENSOR_PURPOSE.MOTOR_CURRENT),
         (SENSOR_TYPE.DISABLE, False, SENSOR_PURPOSE.NONE),
         (SENSOR_TYPE.DISABLE, False, SENSOR_PURPOSE.NONE),
         (SENSOR_TYPE.DISABLE, False, SENSOR_PURPOSE.NONE),

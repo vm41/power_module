@@ -11,7 +11,7 @@ from ADC128D818 import *
 # importing the Transformation file
 from Conversion import *
 ####### CUSTOMIZE ##########
-DEVICE_ADDRESS = ADC_ADDRESS.LOW_LOW
+DEVICE_ADDRESS = ADC_ADDRESS.MID_MID
 ##########################
 #Mode selection
 if MODE_SELECT == PROGRAM_MODE.PI:
@@ -233,10 +233,14 @@ if __name__ == '__main__':
         if (CHANNEL_SENSOR_MAP[ch][1]): #calibrate flag
             adc.calibrate(ch)
             sensorLogger.dump("Channel %d initial reading at calibration: %f"%(ch, adc.read_bias(ch)))   
+        else:
+            adc.uncalibrate(ch)
+            sensorLogger.dump("Channel %d initial reading: %f"%(ch, Conversion.convert(CHANNEL_SENSOR_MAP[ch][0], adc.read_channel(ch))))
+            
     # CUSTOMIZE
     # uncalibrate any channel if needed
-    adc.uncalibrate(4) #this channel should be uncalibrated to read battery
-    sensorLogger.dump("Channel %d uncalibrated to 0.0"%(4))   
+    #adc.uncalibrate(5) #this channel should be uncalibrated to read battery
+    #sensorLogger.dump("Channel %d uncalibrated to 0.0"%(5))   
 
     ADDR = (PWR_HOST,PWR_PORT)
     serversock=socket(AF_INET,SOCK_STREAM)
