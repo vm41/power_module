@@ -12,46 +12,48 @@ from constants import *
 global DUMP_FILE
 
 SMOOTHING_WINDOW=20
-NUMBER_OF_CHANNELS=5        #TODO this is ### CUSTOMZE ###
-CHANNEL_MOTOR_MAPPING=[1, 2, 3, 4]  # what motor is on each channel (put -1 for a channel that is not connected to a motor), refer to hardware specification to see where each motor is on the UAV. this may later on go to constant.py
+NUMBER_OF_CHANNELS=7        #TODO this is ### CUSTOMZE ###
+CHANNEL_MOTOR_MAPPING=[1, 2, 3, 4, -1, -1, -1]  # what motor is on each channel (put -1 for a channel that is not connected to a motor), refer to hardware specification to see where each motor is on the UAV. this may later on go to constant.py
+#not implemented CHANNEL_COUNT_IN_TOTAL=['True', 'True', 'True', 'True', 'False', 'True', 'False']  # whether each channel is counted towards the "total" power/energy
 
 BATTERY_VOLTAGE=25.4 # this ensures power = current * voltage, should get updated with readings
-NUMBER_OF_ROUNDS=2
-NUMBER_OF_SETUPS=4
+NUMBER_OF_ROUNDS=1
+NUMBER_OF_SETUPS=2
 INITIAL_SETUP=0  #USUALLY should be 0. unless you want to skip setups. for example if all trials are 90 degree, then NUMBER_OF_SETUPS=1 and INITIAL_SETUP=2
 SPEED_SETUPS = [2.0, 5.0, 7.0]    #       <- ATTENTION
 TURN_SETUPS = [0, 45, 90, 135]
 HOVER_SETUPS = ['North', 'East', 'South', 'West']
 ROTATE_SETUPS = ['North', 'East', 'South', 'West']
 DISTANCE_SETUPS = [20.0, 40.0, 60.0, 80.0, 100.0]
+WEIGHT_SETUPS = ['Webcam', 'Kinect']
 TARGET_SPEED = 5.0    #this will be updated automatically for "Speed" experiments
-TARGET_SETUP = "Turn" # either "Speed" or "Turn" or "Hover" or "Rotate" or "Distance"
+TARGET_SETUP = "Weight" # either "Speed" or "Turn" or "Hover" or "Rotate" or "Distance" or "Weight"
 SPEED_MARKER_THRESHOLD=1.0     #first time and last time haveing targetSpeed - threshold, will be marked default: 1.0
 WAIT_FOR_MEASURE_FLAG = False # *** CAUTION ***. if on, anything before the first EVENT is ignored. each EVENT flags the measurement on/off
                               # *** CAUTION *** This flag changes TIME_REFERENCE, and INFO_TIME will be unreliable and wrong.
 
 STEADY_DETECTION = False        #whether we ar einterested in steady velocity detection or not
-SAVE_GRAPH_CHANNELS = False      #individual channel current vs. time
+SAVE_GRAPH_CHANNELS = True      #individual channel current vs. time
 SAVE_GRAPH_TOTAL = False        #total current vs. time
 SAVE_GRAPH_VELOCITY = False
 SAVE_GRAPH_ENERGY = False
-SAVE_GRAPH_POWER = False
-SAVE_GRAPH_PATH = True         # showing the trace
-GRAPH_PATH_ANIMATION = True     # animating the path
+SAVE_GRAPH_POWER = True
+SAVE_GRAPH_PATH = False         # showing the trace
+GRAPH_PATH_ANIMATION = False     # animating the path
 RESET_INITIAL_LAT_LON = False   # reset initial position based on each trial
 SAVE_GRAPH_SETUP_BASED = False
 SAVE_GRAPH_ROUND_BASED = False
 APPLY_GRAPH_CUSTOMIZATION = True #yticks, ylimit range, etc.
 VALUE_MAKE_ABSOLUTE = True    # adjust negative values positive
 VALUE_LOWER_WARNING = -0.1     # value below which the script warns
-VALUE_UPPER_WARNING = 30        # value below which the script warns
+VALUE_UPPER_WARNING = 30        # value above which the script warns
 LOG_HEADER_LINES = 2  #how many lines in log files are okay to be ignored, typically at header
 STR_GRAPHS='current_graphs'
 STR_CROUND='constant_round'
 STR_CSETUP='constant_setup'
-GRAPH_FORMAT='png'   #png, pdf, ps, eps, svg.
+GRAPH_FORMAT='eps'   #png, pdf, ps, eps, svg.
 GRAPH_DPI=300
-GRAPH_FIG_WIDTH = 25
+GRAPH_FIG_WIDTH = 15
 GRAPH_FIG_HEIGHT= 10
 global INITIAL_LONGITUDE
 global INITIAL_LATITUDE
@@ -65,7 +67,8 @@ if ((len(sys.argv)>1) and (sys.argv[1]=='-h')) or len(sys.argv)<2 :
     print "----------------------------------------------"
     exit();
 
-DURATION=0	#0 means no limit
+START_TIME = 50
+DURATION= 100	#0 means no limit
 #    DURATION=int(sys.argv[2])
 
 myFile=sys.argv[1]
@@ -87,8 +90,10 @@ elif (TARGET_SETUP=="Hover"):
     CHOSEN_SETUPS = HOVER_SETUPS
 elif (TARGET_SETUP=="Rotate"):
     CHOSEN_SETUPS = ROTATE_SETUPS
+elif (TARGET_SETUP=="Weight"):
+    CHOSEN_SETUPS = WEIGHT_SETUPS
 else:
-    dump("UKNOWN TARGET SETUP: "+TARGET_SETUP)
+    print("UKNOWN TARGET SETUP: "+TARGET_SETUP)
     exit(0)
 
 ##############################################################################
@@ -251,8 +256,8 @@ def dump(myStr):
     sys.stdout.flush()
     DUMP_FILE.write(myStr+"\n")
     DUMP_FILE.flush()
+###########################################################################################
 
-##############################################################################
 ################# reading log file
 #for i in range(1):
 #	f=sys.argv[1].split('/',1)[1]
@@ -278,6 +283,8 @@ file_names = []
 
 trials=0
 
+if (START_TIME > 0 or DURATION > 0):
+	dump("*** START_TIME or DURATION is non-zero, some of the information will be ignored ***")
 
 for f in fileList:
     if (f.endswith('.log') and f.startswith('log')):
@@ -319,6 +326,7 @@ for f in fileList:
         line_number=0
         counted=0
         TIME_REFERENCE=0
+	ORIGINAL_TIME_REFERENCE=0
 
         MEASURE_FLAG = False
         MEASURE_TIME_STAMP = 0
@@ -337,13 +345,20 @@ for f in fileList:
                 l=line.strip().split()
                 now=float(l[0])  
 
+                if (ORIGINAL_TIME_REFERENCE==0):
+                    ORIGINAL_TIME_REFERENCE=now
+
+		if (START_TIME>0) and (now < START_TIME + ORIGINAL_TIME_REFERENCE): #ignoring anything before start_time
+		    continue
+
+                if (DURATION>0) and (now > START_TIME + DURATION + ORIGINAL_TIME_REFERENCE):
+                    dump("Exceeded target duration")
+                    break
+
                 if (TIME_REFERENCE==0):
                     TIME_REFERENCE=now
 
                 time = now - TIME_REFERENCE
-                if (DURATION>0) and (time > DURATION):
-                    dump("Exceeded target duration")
-                    break
 
                 event_type=int(l[1])
 
@@ -384,7 +399,7 @@ for f in fileList:
                         BATTERY_VOLTAGE = value
 
                     if (CHANNEL_SENSOR_MAP[channel][2]==SENSOR_PURPOSE.MOTOR_CURRENT): #total current is only for current measurements
-                        lastValue[channel]=value                # only hall current seensors for motos should be summed for total
+                        lastValue[channel]=value                # only hall current sensors for motors should be summed for total
                         micro_time[trials].append(time)
                         total_curr[trials].append(sum(lastValue))
                         power[trials].append(BATTERY_VOLTAGE * (total_curr[trials][-1]+total_curr[trials][-2])/2)
@@ -455,19 +470,23 @@ for this_trial in range(trials):
         #added_setup_label = 'Current log for Thrust 1500 on 4 Cells Bat Power supply'
         added_setup_label = 'Orientation = %s'%(CHOSEN_SETUPS[this_setup])
     elif (TARGET_SETUP=="Rotate"):
-        CHOSEN_SETUPS = ROTATE_SETUPS
+        #CHOSEN_SETUPS = ROTATE_SETUPS
         added_setup_label = 'Orientation = %s'%(CHOSEN_SETUPS[this_setup])
+    elif (TARGET_SETUP=="Weight"):
+        added_setup_label = 'Sensor mount = %s'%(CHOSEN_SETUPS[this_setup])
     else:
         dump("UKNOWN TARGET SETUP: "+TARGET_SETUP)
         
     dump('processing trial %d: set %d setup %d round %d ...'%(this_trial, this_set, this_setup, this_round))
-    added_title="Round = %d - %s _ Set %d"%(this_round+1,added_setup_label, this_set)
+    #added_title="Round = %d - %s _ Set %d"%(this_round+1,added_setup_label, this_set)
+    added_title="%s - Round %d"%(added_setup_label, this_round+1)
 
     info_time[this_trial], velocity[this_trial], position[this_trial] = extract_info(info[this_trial])
     dump("%d piece of information extracted"%len(info_time[this_trial]))
     #adjusting info times with recording times reference:
-    info_time[this_trial]= [t-info_time[this_trial][0]+info_record_time[this_trial][0] for t in info_time[this_trial]]
-    total_movement[this_trial] = extract_distance(position[this_trial][0], position[this_trial][-1])
+    if (info_time[this_trial]):
+	    info_time[this_trial]= [t-info_time[this_trial][0]+info_record_time[this_trial][0] for t in info_time[this_trial]]
+	    total_movement[this_trial] = extract_distance(position[this_trial][0], position[this_trial][-1])
 
     for ch in range(NUMBER_OF_CHANNELS):
         reading[this_trial][ch]=AvgING(reading[this_trial][ch],SMOOTHING_WINDOW)	    
@@ -525,13 +544,13 @@ for this_trial in range(trials):
 	        label = 'Motor '+str(CHANNEL_MOTOR_MAPPING[ch])
                 ax1.plot(reading_time[this_trial][ch],reading[this_trial][ch], label=label)
 	
-	ax1.plot(micro_time[this_trial], total_curr[this_trial], 'b', label="Total current")
+	#ax1.plot(micro_time[this_trial], total_curr[this_trial], 'k', label="Total current")
 
         for i in range(len(markers_time[this_trial])):
             ax1.axvline(x=markers_time[this_trial][i],color='k')      #TODO apply colors based on marker number
 
         if (APPLY_GRAPH_CUSTOMIZATION):
-            ax1.set_ylim(0,30)
+            ax1.set_ylim(0,10)
             #yticks = ax1.yaxis.get_major_ticks()
             #yticks[-1].label1.set_visible(False)
             fig1.set_figwidth(GRAPH_FIG_WIDTH)
@@ -558,7 +577,8 @@ for this_trial in range(trials):
         ax1_twin.set_ylabel('Voltage (V)')
         ax1_twin.legend(loc='lower right')
         
-        plt.title("%d Channels - %s"%(NUMBER_OF_CHANNELS, added_title))
+#        plt.title("%d Channels - %s"%(NUMBER_OF_CHANNELS, added_title))
+        plt.title("Current Draw - %s"%(added_title))
 	#plt.grid()
         save_this_plot("channels")
 ###### 
@@ -615,7 +635,7 @@ for this_trial in range(trials):
             ax4.axvline(x=markers_time[this_trial][i],color='k')      #TODO apply colors based on marker number
 
         if (APPLY_GRAPH_CUSTOMIZATION):
-            ax4.set_ylim(200, 650)
+            ax4.set_ylim(200, 800)
             #yticks = ax3.yaxis.get_major_ticks()
             #yticks[-1].label1.set_visible(False)
             fig4.set_figwidth(GRAPH_FIG_WIDTH)
