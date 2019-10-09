@@ -226,8 +226,8 @@ class Measure(object):
 
 ### CUSTOMIZE ###
 # skipping unwanted channels?
-#                if (channel < 2):
-#                    channel=2
+                if (channel < 2):
+                    channel=2
 
                 value=self.I2C_CONFIG
                 value+=channel*self.MUX_MULTIPLIER
@@ -299,8 +299,8 @@ if __name__ == '__main__':
 
 ### CUSTOMIZE ###
 # skip calibration if you may
-#   currentServer.report_initial_value()
-    currentServer.calibrate()
+   currentServer.report_initial_value()
+#    currentServer.calibrate()
 
     currentServer.dump("waiting for the client to connect")
     clientsock, add = serversock.accept()

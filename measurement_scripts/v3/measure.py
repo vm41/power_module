@@ -241,6 +241,8 @@ if __name__ == '__main__':
     # uncalibrate any channel if needed
     #adc.uncalibrate(5) #this channel should be uncalibrated to read battery
     #sensorLogger.dump("Channel %d uncalibrated to 0.0"%(5))   
+    adc.write_bias(5, VDD/2.0) # this channel is for pi energy, and needs to be manually calibrated
+    sensorLogger.dump("Channel %d manually calibrated to %f"%(5,adc.read_bias(5)))
 
     ADDR = (PWR_HOST,PWR_PORT)
     serversock=socket(AF_INET,SOCK_STREAM)

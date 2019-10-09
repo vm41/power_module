@@ -216,6 +216,10 @@ class ADC128D818:
         def read_bias(self, channel):
                 return self.channel_bias[channel]
 
+        # forcefully write the bias value for a channel, instead of automatic calibration
+        def write_bias(self, channel, bias):
+                self.channel_bias[channel] = bias
+
 	#Turning on the ADC and its interrupt function
 	def start(self):
 		data = Configuration_Register.Start | Configuration_Register.INT_Enable
