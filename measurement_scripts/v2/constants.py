@@ -19,13 +19,13 @@ class EVENT_TYPE:
 
 NUMBER_OF_CHANNELS	=	4
 
-MODE_SELECT	=	PROGRAM_MODE.HW_IN_THE_LOOP	#SW_IN_THE_LOOP  #HW
+MODE_SELECT	=	PROGRAM_MODE.HW	#SW_IN_THE_LOOP  #HW
 
 PWR_PORT	=	35760
 PACKET_END	=	'\r\r\n\n'
 LITTLE_ENDIAN	=	False
 #BATTERY		=	23.0	#voltage of battery, for power calculation
-VDD		=	5.2 #4.90	#actual voltage on a 5V pin powering the measurement module
+VDD		=	5.12 #4.90	#actual voltage on a 5V pin powering the measurement module
 
 if MODE_SELECT==PROGRAM_MODE.HW:
 	LOG_BUFF_COUNT	=	40 #4000	#number of readings before saving to file

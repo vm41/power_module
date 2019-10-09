@@ -51,7 +51,7 @@ class Measure(object):
         self.SESSION_DIR               = None
         self.SESSION_DIR_INIT          = "session_"
         self.VERBOS_AVERAGE_WINDOW     = 10
-        self.DEV_ADDRESS               = 0x4a
+        self.DEV_ADDRESS               = 0x48
         self.I2C_CONFIG                = 0xC3E3 #11000011 11100011 #OS=1 MUX=100,A0_GND  PGA=001,1/1 MODE=1,single. data rate 111, rest unchanged
         self.SENSOR_STEP               = 0.1 #100mv/A for the 20A sensor module (-20 to 20 Amps in about 4V)
         self.ADC_SCALE                 = 4.096/32768.0
@@ -154,6 +154,26 @@ class Measure(object):
                     self.LEVEL_LIST[channel]=VDD/2.0
 
     ###########################################################################################
+    def report_initial_value(self):
+        self.dump("Reading inital values from the sensors...")
+        try:
+            # read channel 3
+            self.i2c_write(self.I2C_REG_CONF, self.I2C_CONFIG + 3 * self.MUX_MULTIPLIER)
+            self.i2c_wait_to_read()
+            val3 = self.i2c_read(self.I2C_REG_CONV)
+            voltage3 = val3 * self.ADC_SCALE
+            self.dump("Channel 3 initial value: %.3f" % (voltage3))
+
+            # read channel 2
+            self.i2c_write(self.I2C_REG_CONF, self.I2C_CONFIG + 2 * self.MUX_MULTIPLIER)
+            self.i2c_wait_to_read()
+            val2 = self.i2c_read(self.I2C_REG_CONV)
+            voltage2 = val2 * self.ADC_SCALE
+            self.dump("Channel 2 initial value: %.3f" % (voltage2))
+        except:
+            self.dump("Unable to read ADC channels, check wiring and power")
+
+    ###########################################################################################
     def logging(self):
         time.sleep(0.1)
         self.dump("start of logging thread")
@@ -204,6 +224,10 @@ class Measure(object):
                         myFile.flush()
                         break
 
+### CUSTOMIZE ###
+# skipping unwanted channels?
+#                if (channel < 2):
+#                    channel=2
 
                 value=self.I2C_CONFIG
                 value+=channel*self.MUX_MULTIPLIER
@@ -211,7 +235,13 @@ class Measure(object):
                 self.i2c_wait_to_read()
                 value=self.i2c_read(self.I2C_REG_CONV)
                 voltage=value * self.ADC_SCALE
-                current = (voltage - self.LEVEL_LIST[channel]) / self.SENSOR_STEP
+                if (channel == 3):
+                    current = (voltage - VDD / 2.0) / self.SENSOR_STEP
+                elif (channel == 2):
+                    current = voltage
+                else:
+                    current = 0
+
                 if current<0:   # no negative value
                     current = 0
                 myLine="%14.3f"%(now)+"\t"+str(EVENT_TYPE.MEASUREMENT)+"\t"+"%d"%(channel)+"\t"+"%6.2f"%(current)
@@ -267,6 +297,9 @@ if __name__ == '__main__':
     serversock.bind(ADDR)
     serversock.listen(5)
 
+### CUSTOMIZE ###
+# skip calibration if you may
+#   currentServer.report_initial_value()
     currentServer.calibrate()
 
     currentServer.dump("waiting for the client to connect")
