@@ -11,16 +11,26 @@ sys.path.append("../")
 from constants import *
 global DUMP_FILE
 
-if (0): #set 0 or 1 for fonts
-    font = {"family" : "normal",
-            "weight" : "bold",
-            "size"   : 20}
+if (1): #set 0 or 1 for fonts
+#   https://matplotlib.org/3.1.1/tutorials/introductory/customizing.html
+    font = {"family" : "sans-serif", #normal
+            "weight" : 600,
+            "size"   : 24}
     plt.rc("font", **font)
     plt.rcParams["pdf.fonttype"] = 42
     plt.rcParams["ps.fonttype"] = 42
 
+    plt.rc('axes', titlesize=36)     # fontsize of the axes title
+    plt.rc('axes', titleweight=700)     # font weight of title
+    plt.rc('axes', labelweight=700)     # weight of the x and y labels
 
-SMOOTHING_WINDOW=20
+#    plt.rc('axes', labelsize=24)    # fontsize of the x and y labels
+#    plt.rc('xtick', labelsize=24)    # fontsize of the tick labels
+#    plt.rc('ytick', labelsize=24)    # fontsize of the tick labels
+    plt.rc('legend', fontsize=20)    # legend fontsize
+
+
+SMOOTHING_WINDOW=50
 NUMBER_OF_CHANNELS=7        #TODO this is ### CUSTOMZE ###
 CHANNEL_MOTOR_MAPPING=[1, 2, 3, 4, -1, -1, -1]  # what motor is on each channel (put -1 for a channel that is not connected to a motor), refer to hardware specification to see where each motor is on the UAV. this may later on go to constant.py
 #not implemented CHANNEL_COUNT_IN_TOTAL=['True', 'True', 'True', 'True', 'False', 'True', 'False']  # whether each channel is counted towards the "total" power/energy
@@ -77,8 +87,13 @@ if ((len(sys.argv)>1) and (sys.argv[1]=='-h')) or len(sys.argv)<2 :
     exit();
 
 START_TIME = 0
+if (len(sys.argv)>2):
+    START_TIME = float(sys.argv[2])
+    print "START_TIME = ", START_TIME
 DURATION= 0	#0 means no limit
-#    DURATION=int(sys.argv[2])
+if (len(sys.argv)>3):
+    DURATION = float(sys.argv[3])
+    print "DURATION = ",DURATION
 
 myFile=sys.argv[1]
 if (myFile!='ALL'):
