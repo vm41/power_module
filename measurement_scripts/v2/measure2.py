@@ -168,8 +168,17 @@ class Measure(object):
             self.i2c_write(self.I2C_REG_CONF, self.I2C_CONFIG + 2 * self.MUX_MULTIPLIER)
             self.i2c_wait_to_read()
             val2 = self.i2c_read(self.I2C_REG_CONV)
+            if (val2 > 32767):
+                val2 = 0 #correction for the case where the ADC will read the USB sensor as a negative value
             voltage2 = val2 * self.ADC_SCALE
             self.dump("Channel 2 initial value: %.3f" % (voltage2))
+
+            # read channel 1
+            self.i2c_write(self.I2C_REG_CONF, self.I2C_CONFIG + 1 * self.MUX_MULTIPLIER)
+            self.i2c_wait_to_read()
+            val1 = self.i2c_read(self.I2C_REG_CONV)
+            voltage1 = val1 * self.ADC_SCALE
+            self.dump("Channel 1 initial value: %.3f" % (voltage1))
         except:
             self.dump("Unable to read ADC channels, check wiring and power")
 
@@ -226,19 +235,22 @@ class Measure(object):
 
 ### CUSTOMIZE ###
 # skipping unwanted channels?
-                if (channel < 2):
-                    channel=2
+#                if (channel < 1):
+#                    channel = 1
 
                 value=self.I2C_CONFIG
                 value+=channel*self.MUX_MULTIPLIER
                 self.i2c_write(self.I2C_REG_CONF,value)
                 self.i2c_wait_to_read()
                 value=self.i2c_read(self.I2C_REG_CONV)
-                voltage=value * self.ADC_SCALE
-                if (channel == 3):
+                voltage = value * self.ADC_SCALE
+                if (channel == 3 or channel == 1):
                     current = (voltage - VDD / 2.0) / self.SENSOR_STEP
                 elif (channel == 2):
-                    current = voltage
+                    if (value > 32767):
+                        current = 0
+                    else:
+                        current = voltage
                 else:
                     current = 0
 
@@ -299,8 +311,8 @@ if __name__ == '__main__':
 
 ### CUSTOMIZE ###
 # skip calibration if you may
-   currentServer.report_initial_value()
-#    currentServer.calibrate()
+#    currentServer.report_initial_value()
+    currentServer.calibrate()
 
     currentServer.dump("waiting for the client to connect")
     clientsock, add = serversock.accept()
