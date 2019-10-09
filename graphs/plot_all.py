@@ -11,6 +11,15 @@ sys.path.append("../")
 from constants import *
 global DUMP_FILE
 
+if (0): #set 0 or 1 for fonts
+    font = {"family" : "normal",
+            "weight" : "bold",
+            "size"   : 20}
+    plt.rc("font", **font)
+    plt.rcParams["pdf.fonttype"] = 42
+    plt.rcParams["ps.fonttype"] = 42
+
+
 SMOOTHING_WINDOW=20
 NUMBER_OF_CHANNELS=7        #TODO this is ### CUSTOMZE ###
 CHANNEL_MOTOR_MAPPING=[1, 2, 3, 4, -1, -1, -1]  # what motor is on each channel (put -1 for a channel that is not connected to a motor), refer to hardware specification to see where each motor is on the UAV. this may later on go to constant.py
@@ -18,14 +27,14 @@ CHANNEL_MOTOR_MAPPING=[1, 2, 3, 4, -1, -1, -1]  # what motor is on each channel 
 
 BATTERY_VOLTAGE=25.4 # this ensures power = current * voltage, should get updated with readings
 NUMBER_OF_ROUNDS=1
-NUMBER_OF_SETUPS=2
+NUMBER_OF_SETUPS=3
 INITIAL_SETUP=0  #USUALLY should be 0. unless you want to skip setups. for example if all trials are 90 degree, then NUMBER_OF_SETUPS=1 and INITIAL_SETUP=2
 SPEED_SETUPS = [2.0, 5.0, 7.0]    #       <- ATTENTION
 TURN_SETUPS = [0, 45, 90, 135]
 HOVER_SETUPS = ['North', 'East', 'South', 'West']
 ROTATE_SETUPS = ['North', 'East', 'South', 'West']
 DISTANCE_SETUPS = [20.0, 40.0, 60.0, 80.0, 100.0]
-WEIGHT_SETUPS = ['Webcam', 'Kinect']
+WEIGHT_SETUPS = ['None', 'Webcam', 'Kinect']
 TARGET_SPEED = 5.0    #this will be updated automatically for "Speed" experiments
 TARGET_SETUP = "Weight" # either "Speed" or "Turn" or "Hover" or "Rotate" or "Distance" or "Weight"
 SPEED_MARKER_THRESHOLD=1.0     #first time and last time haveing targetSpeed - threshold, will be marked default: 1.0
@@ -37,7 +46,7 @@ SAVE_GRAPH_CHANNELS = True      #individual channel current vs. time
 SAVE_GRAPH_TOTAL = False        #total current vs. time
 SAVE_GRAPH_VELOCITY = False
 SAVE_GRAPH_ENERGY = False
-SAVE_GRAPH_POWER = True
+SAVE_GRAPH_POWER = False
 SAVE_GRAPH_PATH = False         # showing the trace
 GRAPH_PATH_ANIMATION = False     # animating the path
 RESET_INITIAL_LAT_LON = False   # reset initial position based on each trial
@@ -51,10 +60,10 @@ LOG_HEADER_LINES = 2  #how many lines in log files are okay to be ignored, typic
 STR_GRAPHS='current_graphs'
 STR_CROUND='constant_round'
 STR_CSETUP='constant_setup'
-GRAPH_FORMAT='eps'   #png, pdf, ps, eps, svg.
+GRAPH_FORMAT='png'   #png, pdf, ps, eps, svg.
 GRAPH_DPI=300
 GRAPH_FIG_WIDTH = 15
-GRAPH_FIG_HEIGHT= 10
+GRAPH_FIG_HEIGHT= 12
 global INITIAL_LONGITUDE
 global INITIAL_LATITUDE
 global EARTH_R
@@ -67,8 +76,8 @@ if ((len(sys.argv)>1) and (sys.argv[1]=='-h')) or len(sys.argv)<2 :
     print "----------------------------------------------"
     exit();
 
-START_TIME = 50
-DURATION= 100	#0 means no limit
+START_TIME = 0
+DURATION= 0	#0 means no limit
 #    DURATION=int(sys.argv[2])
 
 myFile=sys.argv[1]
@@ -400,9 +409,19 @@ for f in fileList:
 
                     if (CHANNEL_SENSOR_MAP[channel][2]==SENSOR_PURPOSE.MOTOR_CURRENT): #total current is only for current measurements
                         lastValue[channel]=value                # only hall current sensors for motors should be summed for total
+
                         micro_time[trials].append(time)
+                        if (len(micro_time[trials])==2):     # repeat initial value
+                            micro_time[trials][0]=micro_time[trials][1]
+
                         total_curr[trials].append(sum(lastValue))
+                        if (len(total_curr[trials])==2):     # repeat initial value
+                            total_curr[trials][0]=total_curr[trials][1]
+
                         power[trials].append(BATTERY_VOLTAGE * (total_curr[trials][-1]+total_curr[trials][-2])/2)
+                        if (len(power[trials])==2):     # repeat initial value
+                            power[trials][0]=power[trials][1]
+
                         energy[trials].append(energy[trials][-1] + power[trials][-1] * (micro_time[trials][-1]-micro_time[trials][-2]))
 
                 if event_type==EVENT_TYPE.MARK:
@@ -427,7 +446,7 @@ for f in fileList:
 
         dump ("%d lines were read, %d lines counted"%(line_number, counted))
         if (line_number > counted + LOG_HEADER_LINES):
-            dump("**** %d lines not counted (WAITING_FOR_MEASURE_FLAG enabled?) ****"%(line_number - counted - LOG_HEADER_LINES))
+            dump("**** %d lines not counted (WAITING_FOR_MEASURE_FLAG or START_TIME/DURATION enabled?) ****"%(line_number - counted - LOG_HEADER_LINES))
         dump ("within the trial#%d we found %d reading sets, %d events+markers, %d info messages"%(trials, len(reading[trials][0]),len(markers[trials]),len(info[trials])))
         fv.close()
 
@@ -473,7 +492,7 @@ for this_trial in range(trials):
         #CHOSEN_SETUPS = ROTATE_SETUPS
         added_setup_label = 'Orientation = %s'%(CHOSEN_SETUPS[this_setup])
     elif (TARGET_SETUP=="Weight"):
-        added_setup_label = 'Sensor mount = %s'%(CHOSEN_SETUPS[this_setup])
+        added_setup_label = 'Sensor = %s'%(CHOSEN_SETUPS[this_setup])
     else:
         dump("UKNOWN TARGET SETUP: "+TARGET_SETUP)
         
@@ -491,6 +510,7 @@ for this_trial in range(trials):
     for ch in range(NUMBER_OF_CHANNELS):
         reading[this_trial][ch]=AvgING(reading[this_trial][ch],SMOOTHING_WINDOW)	    
     total_curr[this_trial]=AvgING(total_curr[this_trial],SMOOTHING_WINDOW)
+    power[this_trial]=AvgING(power[this_trial],SMOOTHING_WINDOW)
 
     for u in range(len(position[this_trial])-1):
         sum_distance[this_trial] += extract_distance(position[this_trial][u], position[this_trial][u+1])
@@ -550,9 +570,9 @@ for this_trial in range(trials):
             ax1.axvline(x=markers_time[this_trial][i],color='k')      #TODO apply colors based on marker number
 
         if (APPLY_GRAPH_CUSTOMIZATION):
-            ax1.set_ylim(0,10)
-            #yticks = ax1.yaxis.get_major_ticks()
-            #yticks[-1].label1.set_visible(False)
+            #ax1.set_ylim(0,10)
+            yticks = ax1.yaxis.get_major_ticks()
+            yticks[-1].label1.set_visible(False)
             fig1.set_figwidth(GRAPH_FIG_WIDTH)
             fig1.set_figheight(GRAPH_FIG_HEIGHT)
             #fig1.tight_layout()
@@ -563,22 +583,25 @@ for this_trial in range(trials):
         ax1.legend(loc='lower left')
 
         ax1_twin = ax1.twinx()
-        for ch in range(NUMBER_OF_CHANNELS):
-	    if (CHANNEL_SENSOR_MAP[ch][2]==SENSOR_PURPOSE.BATTERY_VOLTAGE):
-	        label = 'Battery Voltage'
-                ax1_twin.plot(reading_time[this_trial][ch], reading[this_trial][ch], label=label)
+        ax1_twin.plot(micro_time[this_trial], power[this_trial], 'k', label="Instantaneous Power")
+#        for ch in range(NUMBER_OF_CHANNELS):
+#	    if (CHANNEL_SENSOR_MAP[ch][2]==SENSOR_PURPOSE.BATTERY_VOLTAGE):
+#	        label = 'Battery Voltage'
+#                ax1_twin.plot(reading_time[this_trial][ch], reading[this_trial][ch], label=label)
+
 
         if (APPLY_GRAPH_CUSTOMIZATION):
-            ax1_twin.set_ylim(0,30)
+#            ax1_twin.set_ylim(0,1800)
+#            ax1_twin.set_ylim(0,30)
             yticks = ax1_twin.yaxis.get_major_ticks()
-            yticks[-1].label1.set_visible(False)
+            yticks[-1].label2.set_visible(False)
             pass
 
-        ax1_twin.set_ylabel('Voltage (V)')
+        ax1_twin.set_ylabel('Power (W)')
+#        ax1_twin.set_ylabel('Voltage (V)')
         ax1_twin.legend(loc='lower right')
         
-#        plt.title("%d Channels - %s"%(NUMBER_OF_CHANNELS, added_title))
-        plt.title("Current Draw - %s"%(added_title))
+        plt.title("Current Draw and Power - %s"%(added_title))
 	#plt.grid()
         save_this_plot("channels")
 ###### 

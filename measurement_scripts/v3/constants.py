@@ -32,7 +32,7 @@ class SENSOR_PURPOSE:
 
 # CUSTOMIZE
 MODE_SELECT = PROGRAM_MODE.PI#selected mode
-VDD = 5.0 #actual voltage on a 5V pin powering the measurement module as float
+VDD = 4.65 #actual voltage on a 5V pin powering the measurement module as float
 DEBUG_MODE = False
 VERBOS_AVERAGE_WINDOW = 1000
 

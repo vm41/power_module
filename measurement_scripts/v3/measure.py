@@ -11,7 +11,7 @@ from ADC128D818 import *
 # importing the Transformation file
 from Conversion import *
 ####### CUSTOMIZE ##########
-DEVICE_ADDRESS = ADC_ADDRESS.MID_MID
+DEVICE_ADDRESS = ADC_ADDRESS.LOW_LOW
 ##########################
 #Mode selection
 if MODE_SELECT == PROGRAM_MODE.PI:
