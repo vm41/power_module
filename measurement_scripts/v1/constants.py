@@ -19,11 +19,11 @@ class EVENT_TYPE:
 
 NUMBER_OF_CHANNELS	=	4
 
-<<<<<<< 4f1b144ebb1ac7dfdad53bf6d6322f0519fd4f57
+#<<<<<<< 4f1b144ebb1ac7dfdad53bf6d6322f0519fd4f57
 MODE_SELECT	=	PROGRAM_MODE.HW #SW_IN_THE_LOOP  #HW
 =======
 MODE_SELECT	=	PROGRAM_MODE.HW_IN_THE_LOOP	#SW_IN_THE_LOOP  #HW
->>>>>>> adding some files from summer. check constants.py
+#>>>>>>> adding some files from summer. check constants.py
 
 PWR_PORT	=	35760
 PACKET_END	=	'\r\r\n\n'
